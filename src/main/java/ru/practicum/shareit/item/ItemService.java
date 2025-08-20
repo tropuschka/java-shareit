@@ -28,12 +28,21 @@ public class ItemService {
         checkUser(userId);
         verifyItemDto(itemDto);
         Item item = ItemMapper.toItem(itemDto);
-        if (itemDto.getRequest() != null) {
-            item.setRequest(itemRequestRepository.getRequestById(itemDto.getRequest())
-                    .orElseThrow(() -> new NotFoundException("Запрос с ID " + itemDto.getRequest() + " не найден")));
-        }
+        setItemRequest(itemDto, item);
         item.setOwner(userId);
-        itemRepository.createItem(userId, item);
+        itemRepository.createItem(item);
+        return item;
+    }
+
+    public Item updateItem(Long userId, Long itemId, ItemDto itemDto) {
+        checkUser(userId);
+        checkItem(itemId);
+        verifyItemDto(itemDto);
+        Item item = ItemMapper.toItem(itemDto);
+        checkOwner(userId, item);
+        item.setId(itemId);
+        setItemRequest(itemDto, item);
+        itemRepository.updateItem(itemId, item);
         return item;
     }
 
@@ -46,5 +55,24 @@ public class ItemService {
     private void checkUser(Long userId) {
         userRepository.getUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
+    }
+
+    private void checkItem(Long itemId) {
+        itemRepository.getItemById(itemId)
+                .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден"));
+    }
+
+    private void checkOwner(Long userId, Item item) {
+        if (userId != item.getOwner() || item.getOwner() == null) {
+            throw new ConditionsNotMetException("Пользователь с ID " + userId +
+                    " не является владельцем предмета с ID " + item.getId());
+        }
+    }
+
+    private void setItemRequest(ItemDto itemDto, Item item) {
+        if (itemDto.getRequest() != null) {
+            item.setRequest(itemRequestRepository.getRequestById(itemDto.getRequest())
+                    .orElseThrow(() -> new NotFoundException("Запрос с ID " + itemDto.getRequest() + " не найден")));
+        }
     }
 }

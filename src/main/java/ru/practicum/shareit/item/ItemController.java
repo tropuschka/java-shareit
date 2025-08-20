@@ -18,4 +18,11 @@ public class ItemController {
     public Item addItem(@RequestHeader("X-Sharer-User-Id") Long userId, @RequestBody ItemDto itemDto) {
         return itemService.addItem(userId, itemDto);
     }
+
+    @PatchMapping("/{itemId}")
+    public Item changeItem(@RequestHeader("X-Sharer-User-Id") Long userId,
+                           @PathVariable Long itemId,
+                           @RequestBody ItemDto itemDto) {
+        return itemService.updateItem(userId, itemId, itemDto);
+    }
 }
