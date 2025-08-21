@@ -36,7 +36,7 @@ public class ItemService {
 
     public Item updateItem(Long userId, Long itemId, ItemDto itemDto) {
         checkUser(userId);
-        checkItem(itemId);
+        getItemById(itemId);
         verifyItemDto(itemDto);
         Item item = ItemMapper.toItem(itemDto);
         checkOwner(userId, item);
@@ -44,6 +44,11 @@ public class ItemService {
         setItemRequest(itemDto, item);
         itemRepository.updateItem(itemId, item);
         return item;
+    }
+
+    public Item getItemById(Long itemId) {
+        return itemRepository.getItemById(itemId)
+                .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден"));
     }
 
     private void verifyItemDto(ItemDto itemDto) {
@@ -55,11 +60,6 @@ public class ItemService {
     private void checkUser(Long userId) {
         userRepository.getUserById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
-    }
-
-    private void checkItem(Long itemId) {
-        itemRepository.getItemById(itemId)
-                .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден"));
     }
 
     private void checkOwner(Long userId, Item item) {

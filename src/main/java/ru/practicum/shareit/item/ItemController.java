@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 
+import java.util.Collection;
+
 @RestController
 @RequestMapping("/items")
 public class ItemController {
@@ -24,5 +26,10 @@ public class ItemController {
                            @PathVariable Long itemId,
                            @RequestBody ItemDto itemDto) {
         return itemService.updateItem(userId, itemId, itemDto);
+    }
+
+    @GetMapping("/{itemId}")
+    public Item findItemById(@PathVariable Long itemId) {
+        return itemService.getItemById(itemId);
     }
 }
