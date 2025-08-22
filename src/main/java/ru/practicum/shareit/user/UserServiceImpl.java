@@ -46,6 +46,12 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
     }
 
+    @Override
+    public void deleteUser(Long userId) {
+        findUserById(userId);
+        userRepository.deleteUser(userId);
+    }
+
     private void checkUserDto(UserDto userDto) {
         if (userDto.getName() == null || userDto.getName().isBlank()) {
             throw new ConditionsNotMetException("Имя пользователя не должно быть пустым");

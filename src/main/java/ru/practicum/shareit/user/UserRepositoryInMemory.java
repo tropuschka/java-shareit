@@ -33,6 +33,11 @@ public class UserRepositoryInMemory implements UserRepository {
         users.put(userId, user);
     }
 
+    @Override
+    public void deleteUser(Long userId) {
+        users.remove(userId);
+    }
+
     private Long nextId() {
         Long maxId = users.keySet().stream()
                 .mapToLong(id -> id)
