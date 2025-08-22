@@ -6,4 +6,6 @@ public interface UserService {
     User createUser(UserDto userDto);
 
     User updateUser(Long userId, UserDto userDto);
+
+    User findUserById(Long userId);
 }

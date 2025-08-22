@@ -28,8 +28,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUser(Long userId, UserDto userDto) {
-        User user = userRepository.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
+        User user = findUserById(userId);
         if (userDto.getName() != null && !userDto.getName().isBlank()) {
             user.setName(userDto.getName());
         }
@@ -39,6 +38,12 @@ public class UserServiceImpl implements UserService {
         }
         userRepository.updateUser(userId, user);
         return user;
+    }
+
+    @Override
+    public User findUserById(Long userId) {
+        return userRepository.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
     }
 
     private void checkUserDto(UserDto userDto) {

@@ -23,4 +23,9 @@ public class UserController {
     public User update(@PathVariable Long userId, @RequestBody UserDto userDto) {
         return userService.updateUser(userId, userDto);
     }
+
+    @GetMapping("/{userId}")
+    public User findUserById(@PathVariable Long userId) {
+        return userService.findUserById(userId);
+    }
 }
