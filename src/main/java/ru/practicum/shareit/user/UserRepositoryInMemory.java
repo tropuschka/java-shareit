@@ -1,7 +1,6 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.Collection;
 import java.util.HashMap;

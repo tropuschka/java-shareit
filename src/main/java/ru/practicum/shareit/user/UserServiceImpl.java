@@ -8,8 +8,6 @@ import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 
-import java.util.Objects;
-
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
