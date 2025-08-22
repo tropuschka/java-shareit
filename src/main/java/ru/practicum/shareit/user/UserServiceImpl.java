@@ -8,6 +8,8 @@ import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 
+import java.util.Objects;
+
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
@@ -62,7 +64,7 @@ public class UserServiceImpl implements UserService {
 
     private void validateEmail(UserDto userDto, Long userId) {
         boolean duplicatedEmail = userRepository.getAll().stream()
-                .anyMatch(u -> u.getEmail().equals(userDto.getEmail()) && u.getId() != userId);
+                .anyMatch(u -> u.getEmail().equals(userDto.getEmail()) && !Objects.equals(u.getId(), userId));
         if (duplicatedEmail) throw new DuplicationException("Пользователь с такой почтой уже существует");
         if (!userDto.getEmail().contains("@")) throw new ConditionsNotMetException("Почта должна содержать символ @");
     }

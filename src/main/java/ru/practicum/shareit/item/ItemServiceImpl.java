@@ -11,6 +11,7 @@ import ru.practicum.shareit.user.UserRepository;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 @Service
 public class ItemServiceImpl implements ItemService {
@@ -87,7 +88,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void checkOwner(Long userId, Item item) {
-        if (userId != item.getOwner() || item.getOwner() == null) {
+        if (!Objects.equals(userId, item.getOwner()) || item.getOwner() == null) {
             throw new ConditionsNotMetException("Пользователь с ID " + userId +
                     " не является владельцем предмета с ID " + item.getId());
         }
