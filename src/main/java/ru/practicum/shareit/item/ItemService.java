@@ -9,6 +9,8 @@ import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.UserRepository;
 
+import java.util.Collection;
+
 @Service
 public class ItemService {
     private final ItemRepository itemRepository;
@@ -49,6 +51,11 @@ public class ItemService {
     public Item getItemById(Long itemId) {
         return itemRepository.getItemById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден"));
+    }
+
+    public Collection<Item> getUserItems(Long userId) {
+        checkUser(userId);
+        return itemRepository.getUserItems(userId);
     }
 
     private void verifyItemDto(ItemDto itemDto) {

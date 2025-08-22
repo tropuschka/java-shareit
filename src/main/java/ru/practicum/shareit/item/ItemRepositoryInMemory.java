@@ -2,8 +2,11 @@ package ru.practicum.shareit.item;
 
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 public class ItemRepositoryInMemory implements ItemRepository {
@@ -23,6 +26,13 @@ public class ItemRepositoryInMemory implements ItemRepository {
     @Override
     public void updateItem(Long itemId, Item item) {
         items.put(itemId, item);
+    }
+
+    @Override
+    public Collection<Item> getUserItems(Long userId) {
+        return items.values().stream()
+                .filter(i -> Objects.equals(i.getOwner(), userId))
+                .collect(Collectors.toSet());
     }
 
     private Long nextId() {

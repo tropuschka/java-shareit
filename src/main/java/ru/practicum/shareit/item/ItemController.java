@@ -32,4 +32,9 @@ public class ItemController {
     public Item findItemById(@PathVariable Long itemId) {
         return itemService.getItemById(itemId);
     }
+
+    @GetMapping
+    public Collection<Item> findUserItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        return itemService.getUserItems(userId);
+    }
 }
