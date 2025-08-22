@@ -37,4 +37,9 @@ public class ItemController {
     public Collection<Item> findUserItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
         return itemService.getUserItems(userId);
     }
+
+    @GetMapping("/search")
+    public Collection<Item> searchItem(@RequestParam String text) {
+        return itemService.searchItem(text);
+    }
 }

@@ -35,6 +35,13 @@ public class ItemRepositoryInMemory implements ItemRepository {
                 .collect(Collectors.toSet());
     }
 
+    @Override
+    public Collection<Item> searchItem(String query) {
+        return items.values().stream()
+                .filter(i -> (i.getName().contains(query) || i.getDescription().contains(query)) && i.isAvailable())
+                .collect(Collectors.toSet());
+    }
+
     private Long nextId() {
         Long maxId = items.keySet().stream()
                 .mapToLong(id -> id)

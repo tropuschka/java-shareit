@@ -58,6 +58,11 @@ public class ItemService {
         return itemRepository.getUserItems(userId);
     }
 
+    public Collection<Item> searchItem(String query) {
+        checkQuery(query);
+        return itemRepository.searchItem(query);
+    }
+
     private void verifyItemDto(ItemDto itemDto) {
         if (itemDto.getName() == null || itemDto.getName().isBlank()) {
             throw new ConditionsNotMetException("Название предмета не должно быть пустым");
@@ -74,6 +79,10 @@ public class ItemService {
             throw new ConditionsNotMetException("Пользователь с ID " + userId +
                     " не является владельцем предмета с ID " + item.getId());
         }
+    }
+
+    private void checkQuery(String query) {
+        if (query.isBlank()) throw new ConditionsNotMetException("Поисковой запрос пуст");
     }
 
     private void setItemRequest(ItemDto itemDto, Item item) {

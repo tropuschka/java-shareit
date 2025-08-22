@@ -11,4 +11,6 @@ public interface ItemRepository {
     void updateItem(Long itemId, Item item);
 
     Collection<Item> getUserItems(Long userId);
+
+    Collection<Item> searchItem(String query);
 }
