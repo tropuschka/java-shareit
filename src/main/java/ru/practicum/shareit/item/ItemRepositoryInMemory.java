@@ -38,7 +38,8 @@ public class ItemRepositoryInMemory implements ItemRepository {
     @Override
     public Collection<Item> searchItem(String query) {
         return items.values().stream()
-                .filter(i -> (i.getName().contains(query) || i.getDescription().contains(query)) && i.isAvailable())
+                .filter(i -> (i.getName().toUpperCase().contains(query.toUpperCase())
+                        || i.getDescription().toUpperCase().contains(query.toUpperCase())) && i.isAvailable())
                 .collect(Collectors.toSet());
     }
 

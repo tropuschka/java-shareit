@@ -6,6 +6,7 @@ import ru.practicum.shareit.exceptions.ConditionsNotMetException;
 import ru.practicum.shareit.exceptions.DuplicationException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserMapper;
 
 import java.util.Objects;
 
@@ -22,7 +23,7 @@ public class UserServiceImpl implements UserService {
     public User createUser(UserDto userDto) {
         checkUserDto(userDto);
         validateEmail(userDto);
-        User user = userDtoToUser(userDto);
+        User user = UserMapper.toUser(userDto);
         return userRepository.addUser(user);
     }
 
@@ -73,12 +74,5 @@ public class UserServiceImpl implements UserService {
                 .anyMatch(u -> u.getEmail().equals(userDto.getEmail()));
         if (duplicatedEmail) throw new DuplicationException("Пользователь с такой почтой уже существует");
         if (!userDto.getEmail().contains("@")) throw new ConditionsNotMetException("Почта должна содержать символ @");
-    }
-
-    private User userDtoToUser(UserDto userDto) {
-        User user = new User();
-        if (userDto.getName() != null && !userDto.getName().isBlank()) user.setName(userDto.getName());
-        if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) user.setEmail(userDto.getEmail());
-        return user;
     }
 }

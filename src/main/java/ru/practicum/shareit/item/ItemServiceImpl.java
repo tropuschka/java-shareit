@@ -9,6 +9,7 @@ import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.UserRepository;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 @Service
@@ -28,7 +29,7 @@ public class ItemServiceImpl implements ItemService {
 
     public Item addItem(Long userId, ItemDto itemDto) {
         checkUser(userId);
-        verifyItemDto(itemDto);
+        validateItemDto(itemDto);
         Item item = ItemMapper.toItem(itemDto);
         setItemRequest(itemDto, item);
         item.setOwner(userId);
@@ -39,10 +40,15 @@ public class ItemServiceImpl implements ItemService {
     public Item updateItem(Long userId, Long itemId, ItemDto itemDto) {
         checkUser(userId);
         getItemById(itemId);
-        verifyItemDto(itemDto);
-        Item item = ItemMapper.toItem(itemDto);
+        Item item = getItemById(itemId);
         checkOwner(userId, item);
-        item.setId(itemId);
+        if (itemDto.getName() != null && !itemDto.getName().isBlank()) item.setName(itemDto.getName());
+        if (itemDto.getDescription() != null && !itemDto.getDescription().isBlank()) {
+            item.setDescription(itemDto.getDescription());
+        }
+        if (itemDto.getAvailable() != null) {
+            item.setAvailable(itemDto.getAvailable());
+        }
         setItemRequest(itemDto, item);
         itemRepository.updateItem(itemId, item);
         return item;
@@ -59,13 +65,19 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public Collection<Item> searchItem(String query) {
-        checkQuery(query);
+        if (query.isBlank()) return new ArrayList<>();
         return itemRepository.searchItem(query);
     }
 
-    private void verifyItemDto(ItemDto itemDto) {
+    private void validateItemDto(ItemDto itemDto) {
         if (itemDto.getName() == null || itemDto.getName().isBlank()) {
             throw new ConditionsNotMetException("Название предмета не должно быть пустым");
+        }
+        if (itemDto.getAvailable() != true && itemDto.getAvailable() != false) {
+            throw new ConditionsNotMetException("Статус должен быть указан");
+        }
+        if (itemDto.getDescription() == null || itemDto.getDescription().isBlank()) {
+            throw new ConditionsNotMetException("Описание предмета не должно быть пустым");
         }
     }
 
@@ -79,10 +91,6 @@ public class ItemServiceImpl implements ItemService {
             throw new ConditionsNotMetException("Пользователь с ID " + userId +
                     " не является владельцем предмета с ID " + item.getId());
         }
-    }
-
-    private void checkQuery(String query) {
-        if (query.isBlank()) throw new ConditionsNotMetException("Поисковой запрос пуст");
     }
 
     private void setItemRequest(ItemDto itemDto, Item item) {

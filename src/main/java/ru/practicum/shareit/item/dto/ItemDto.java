@@ -7,10 +7,10 @@ import lombok.RequiredArgsConstructor;
 public class ItemDto {
     private String name;
     private String description;
-    private boolean available;
+    private Boolean available;
     private Long request;
 
-    public ItemDto(String name, String description, boolean available, Long requestId) {
+    public ItemDto(String name, String description, Boolean available, Long requestId) {
         this.name = name;
         this.description = description;
         this.available = available;
