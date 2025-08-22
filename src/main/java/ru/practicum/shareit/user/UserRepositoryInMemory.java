@@ -28,6 +28,11 @@ public class UserRepositoryInMemory implements UserRepository {
         return user;
     }
 
+    @Override
+    public void updateUser(Long userId, User user) {
+        users.put(userId, user);
+    }
+
     private Long nextId() {
         Long maxId = users.keySet().stream()
                 .mapToLong(id -> id)

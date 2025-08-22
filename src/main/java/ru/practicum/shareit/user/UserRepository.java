@@ -11,4 +11,6 @@ public interface UserRepository {
     Collection<User> getAll();
 
     User addUser(User user);
+
+    void updateUser(Long userId, User user);
 }
