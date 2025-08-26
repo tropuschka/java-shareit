@@ -14,6 +14,6 @@ public class Item {
     private String description;
     private Long owner;
     private boolean available;
-    ItemRequest request;
-    HashMap<Long, String> feedback = new HashMap<>();
+    private ItemRequest request;
+    private HashMap<Long, String> feedback = new HashMap<>();
 }

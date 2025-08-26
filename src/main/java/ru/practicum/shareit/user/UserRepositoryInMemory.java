@@ -8,7 +8,7 @@ import java.util.Optional;
 
 @Repository
 public class UserRepositoryInMemory implements UserRepository {
-    HashMap<Long, User> users = new HashMap<>();
+    private HashMap<Long, User> users = new HashMap<>();
 
     @Override
     public Optional<User> getUserById(Long id) {
