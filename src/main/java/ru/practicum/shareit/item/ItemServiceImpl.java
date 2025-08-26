@@ -12,6 +12,8 @@ import ru.practicum.shareit.user.UserRepository;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ItemServiceImpl implements ItemService {
@@ -28,17 +30,17 @@ public class ItemServiceImpl implements ItemService {
         this.itemRequestRepository = itemRequestRepository;
     }
 
-    public Item addItem(Long userId, ItemDto itemDto) {
+    public ItemDto addItem(Long userId, ItemDto itemDto) {
         checkUser(userId);
         validateItemDto(itemDto);
         Item item = ItemMapper.toItem(itemDto);
         setItemRequest(itemDto, item);
         item.setOwner(userId);
         itemRepository.createItem(item);
-        return item;
+        return ItemMapper.toItemDto(item);
     }
 
-    public Item updateItem(Long userId, Long itemId, ItemDto itemDto) {
+    public ItemDto updateItem(Long userId, Long itemId, ItemDto itemDto) {
         checkUser(userId);
         getItemById(itemId);
         Item item = getItemById(itemId);
@@ -52,22 +54,31 @@ public class ItemServiceImpl implements ItemService {
         }
         setItemRequest(itemDto, item);
         itemRepository.updateItem(itemId, item);
-        return item;
+        return ItemMapper.toItemDto(item);
     }
 
-    public Item getItemById(Long itemId) {
+    public ItemDto getItemDtoById(Long itemId) {
+        return ItemMapper.toItemDto(itemRepository.getItemById(itemId)
+                .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден")));
+    }
+
+    public Collection<ItemDto> getUserItems(Long userId) {
+        checkUser(userId);
+        return itemRepository.getUserItems(userId).stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toSet());
+    }
+
+    public Collection<ItemDto> searchItem(String query) {
+        if (query.isBlank()) return new ArrayList<>();
+        return itemRepository.searchItem(query).stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toSet());
+    }
+
+    private Item getItemById(Long itemId) {
         return itemRepository.getItemById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден"));
-    }
-
-    public Collection<Item> getUserItems(Long userId) {
-        checkUser(userId);
-        return itemRepository.getUserItems(userId);
-    }
-
-    public Collection<Item> searchItem(String query) {
-        if (query.isBlank()) return new ArrayList<>();
-        return itemRepository.searchItem(query);
     }
 
     private void validateItemDto(ItemDto itemDto) {
