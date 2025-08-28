@@ -1,5 +1,8 @@
 package ru.practicum.shareit.item;
 
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.ConditionsNotMetException;
@@ -12,7 +15,6 @@ import ru.practicum.shareit.user.UserRepository;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +22,8 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final ItemRequestRepository itemRequestRepository;
+    private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    private final Validator validator= factory.getValidator();
 
     @Autowired
     public ItemServiceImpl(ItemRepository itemRepository,
@@ -32,11 +36,11 @@ public class ItemServiceImpl implements ItemService {
 
     public ItemDto addItem(Long userId, ItemDto itemDto) {
         checkUser(userId);
-        validateItemDto(itemDto);
         Item item = ItemMapper.toItem(itemDto);
         setItemRequest(itemDto, item);
         item.setOwner(userId);
         itemRepository.createItem(item);
+        validator.validate(item);
         return ItemMapper.toItemDto(item);
     }
 
@@ -53,6 +57,7 @@ public class ItemServiceImpl implements ItemService {
             item.setAvailable(itemDto.getAvailable());
         }
         setItemRequest(itemDto, item);
+        validator.validate(item);
         itemRepository.updateItem(itemId, item);
         return ItemMapper.toItemDto(item);
     }
@@ -79,18 +84,6 @@ public class ItemServiceImpl implements ItemService {
     private Item getItemById(Long itemId) {
         return itemRepository.getItemById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден"));
-    }
-
-    private void validateItemDto(ItemDto itemDto) {
-        if (itemDto.getName() == null || itemDto.getName().isBlank()) {
-            throw new ConditionsNotMetException("Название предмета не должно быть пустым");
-        }
-        if (itemDto.getAvailable() != true && itemDto.getAvailable() != false) {
-            throw new ConditionsNotMetException("Статус должен быть указан");
-        }
-        if (itemDto.getDescription() == null || itemDto.getDescription().isBlank()) {
-            throw new ConditionsNotMetException("Описание предмета не должно быть пустым");
-        }
     }
 
     private void checkUser(Long userId) {

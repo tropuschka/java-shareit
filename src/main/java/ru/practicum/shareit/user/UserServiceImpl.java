@@ -1,8 +1,10 @@
 package ru.practicum.shareit.user;
 
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exceptions.ConditionsNotMetException;
 import ru.practicum.shareit.exceptions.DuplicationException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -13,6 +15,8 @@ import java.util.Objects;
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    private final Validator validator= factory.getValidator();
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository) {
@@ -21,9 +25,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        checkUserDto(userDto);
         validateEmail(userDto);
         User user = UserMapper.toUser(userDto);
+        validator.validate(user);
         return UserMapper.toUserDto(userRepository.addUser(user));
     }
 
@@ -37,6 +41,7 @@ public class UserServiceImpl implements UserService {
             validateEmail(userDto, userId);
             user.setEmail(userDto.getEmail());
         }
+        validator.validate(user);
         userRepository.updateUser(userId, user);
         return UserMapper.toUserDto(user);
     }
@@ -58,26 +63,15 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
     }
 
-    private void checkUserDto(UserDto userDto) {
-        if (userDto.getName() == null || userDto.getName().isBlank()) {
-            throw new ConditionsNotMetException("Имя пользователя не должно быть пустым");
-        }
-        if (userDto.getEmail() == null || userDto.getEmail().isBlank()) {
-            throw new ConditionsNotMetException("Почта не должна быть пустой");
-        }
-    }
-
     private void validateEmail(UserDto userDto, Long userId) {
         boolean duplicatedEmail = userRepository.getAll().stream()
                 .anyMatch(u -> u.getEmail().equals(userDto.getEmail()) && !Objects.equals(u.getId(), userId));
         if (duplicatedEmail) throw new DuplicationException("Пользователь с такой почтой уже существует");
-        if (!userDto.getEmail().contains("@")) throw new ConditionsNotMetException("Почта должна содержать символ @");
     }
 
     private void validateEmail(UserDto userDto) {
         boolean duplicatedEmail = userRepository.getAll().stream()
                 .anyMatch(u -> u.getEmail().equals(userDto.getEmail()));
         if (duplicatedEmail) throw new DuplicationException("Пользователь с такой почтой уже существует");
-        if (!userDto.getEmail().contains("@")) throw new ConditionsNotMetException("Почта должна содержать символ @");
     }
 }
