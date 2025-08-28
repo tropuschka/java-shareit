@@ -7,8 +7,7 @@ public class ItemMapper {
         return new ItemDto(
                 item.getName(),
                 item.getDescription(),
-                item.getAvailable(),
-                item.getRequest() != null ? item.getRequest().getId() : null
+                item.getAvailable()
         );
     }
 

@@ -18,6 +18,4 @@ public class Item {
     private Long owner;
     @NotBlank(message = "Статус должен быть указан")
     private Boolean available;
-    private ItemRequest request;
-    private HashMap<Long, String> feedback = new HashMap<>();
 }

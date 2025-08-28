@@ -23,14 +23,12 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
-    private final ItemRequestRepository itemRequestRepository;
     private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     private final Validator validator= factory.getValidator();
 
     public ItemDto addItem(Long userId, ItemDto itemDto) {
         checkUser(userId);
         Item item = ItemMapper.toItem(itemDto);
-        setItemRequest(itemDto, item);
         item.setOwner(userId);
         itemRepository.createItem(item);
         validator.validate(item);
@@ -49,7 +47,6 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto.getAvailable() != null) {
             item.setAvailable(itemDto.getAvailable());
         }
-        setItemRequest(itemDto, item);
         validator.validate(item);
         itemRepository.updateItem(itemId, item);
         return ItemMapper.toItemDto(item);
@@ -88,13 +85,6 @@ public class ItemServiceImpl implements ItemService {
         if (!Objects.equals(userId, item.getOwner()) || item.getOwner() == null) {
             throw new ConditionsNotMetException("Пользователь с ID " + userId +
                     " не является владельцем предмета с ID " + item.getId());
-        }
-    }
-
-    private void setItemRequest(ItemDto itemDto, Item item) {
-        if (itemDto.getRequest() != null) {
-            item.setRequest(itemRequestRepository.getRequestById(itemDto.getRequest())
-                    .orElseThrow(() -> new NotFoundException("Запрос с ID " + itemDto.getRequest() + " не найден")));
         }
     }
 }
