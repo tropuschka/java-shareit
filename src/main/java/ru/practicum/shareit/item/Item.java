@@ -1,11 +1,9 @@
 package ru.practicum.shareit.item;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import ru.practicum.shareit.request.ItemRequest;
-
-import java.util.HashMap;
 
 @Data
 @RequiredArgsConstructor
@@ -16,6 +14,6 @@ public class Item {
     @NotBlank(message = "Описание предмета не должно быть пустым")
     private String description;
     private Long owner;
-    @NotBlank(message = "Статус должен быть указан")
+    @NotNull(message = "Статус должен быть указан")
     private Boolean available;
 }

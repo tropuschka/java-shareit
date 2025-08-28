@@ -39,7 +39,8 @@ public class ItemRepositoryInMemory implements ItemRepository {
     public Collection<Item> searchItem(String query) {
         return items.values().stream()
                 .filter(i -> (i.getName().toUpperCase().contains(query.toUpperCase())
-                        || i.getDescription().toUpperCase().contains(query.toUpperCase())) && i.getAvailable())
+                        || (i.getDescription() != null &&
+                        i.getDescription().toUpperCase().contains(query.toUpperCase()))) && i.getAvailable())
                 .collect(Collectors.toSet());
     }
 

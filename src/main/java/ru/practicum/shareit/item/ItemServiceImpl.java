@@ -1,21 +1,21 @@
 package ru.practicum.shareit.item;
 
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.ConditionsNotMetException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
-import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,7 +31,12 @@ public class ItemServiceImpl implements ItemService {
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(userId);
         itemRepository.createItem(item);
-        validator.validate(item);
+        Set<ConstraintViolation<Item>> violations = validator.validate(item);
+        if (!violations.isEmpty()) {
+            for (ConstraintViolation<Item> itemValidation : violations) {
+                throw new ConditionsNotMetException(itemValidation.getMessage());
+            }
+        }
         return ItemMapper.toItemDto(item);
     }
 
@@ -47,7 +52,12 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto.getAvailable() != null) {
             item.setAvailable(itemDto.getAvailable());
         }
-        validator.validate(item);
+        Set<ConstraintViolation<Item>> violations = validator.validate(item);
+        if (!violations.isEmpty()) {
+            for (ConstraintViolation<Item> itemValidation : violations) {
+                throw new ConditionsNotMetException(itemValidation.getMessage());
+            }
+        }
         itemRepository.updateItem(itemId, item);
         return ItemMapper.toItemDto(item);
     }

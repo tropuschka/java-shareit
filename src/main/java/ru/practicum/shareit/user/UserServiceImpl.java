@@ -1,17 +1,20 @@
 package ru.practicum.shareit.user;
 
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exceptions.ConditionsNotMetException;
 import ru.practicum.shareit.exceptions.DuplicationException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +27,12 @@ public class UserServiceImpl implements UserService {
     public UserDto createUser(UserDto userDto) {
         validateEmail(userDto);
         User user = UserMapper.toUser(userDto);
-        validator.validate(user);
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        if (!violations.isEmpty()) {
+            for (ConstraintViolation<User> userViolations : violations) {
+                throw new ConditionsNotMetException(userViolations.getMessage());
+            }
+        }
         return UserMapper.toUserDto(userRepository.addUser(user));
     }
 
@@ -38,7 +46,12 @@ public class UserServiceImpl implements UserService {
             validateEmail(userDto, userId);
             user.setEmail(userDto.getEmail());
         }
-        validator.validate(user);
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        if (!violations.isEmpty()) {
+            for (ConstraintViolation<User> userViolations : violations) {
+                throw new ConditionsNotMetException(userViolations.getMessage());
+            }
+        }
         userRepository.updateUser(userId, user);
         return UserMapper.toUserDto(user);
     }
