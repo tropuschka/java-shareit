@@ -24,7 +24,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    private final Validator validator= factory.getValidator();
+    private final Validator validator = factory.getValidator();
 
     public ItemDto addItem(Long userId, ItemDto itemDto) {
         checkUser(userId);

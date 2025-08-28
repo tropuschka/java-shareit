@@ -5,7 +5,6 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.ConditionsNotMetException;
 import ru.practicum.shareit.exceptions.DuplicationException;
@@ -21,7 +20,7 @@ import java.util.Set;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    private final Validator validator= factory.getValidator();
+    private final Validator validator = factory.getValidator();
 
     @Override
     public UserDto createUser(UserDto userDto) {
