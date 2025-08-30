@@ -1,9 +1,5 @@
 package ru.practicum.shareit.item;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.ConditionsNotMetException;
@@ -15,7 +11,6 @@ import ru.practicum.shareit.user.UserRepository;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,20 +18,12 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
-    private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    private final Validator validator = factory.getValidator();
 
     public ItemDto addItem(Long userId, ItemDto itemDto) {
         checkUser(userId);
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(userId);
         itemRepository.createItem(item);
-        Set<ConstraintViolation<Item>> violations = validator.validate(item);
-        if (!violations.isEmpty()) {
-            for (ConstraintViolation<Item> itemValidation : violations) {
-                throw new ConditionsNotMetException(itemValidation.getMessage());
-            }
-        }
         return ItemMapper.toItemDto(item);
     }
 
@@ -51,12 +38,6 @@ public class ItemServiceImpl implements ItemService {
         }
         if (itemDto.getAvailable() != null) {
             item.setAvailable(itemDto.getAvailable());
-        }
-        Set<ConstraintViolation<Item>> violations = validator.validate(item);
-        if (!violations.isEmpty()) {
-            for (ConstraintViolation<Item> itemValidation : violations) {
-                throw new ConditionsNotMetException(itemValidation.getMessage());
-            }
         }
         itemRepository.updateItem(itemId, item);
         return ItemMapper.toItemDto(item);
