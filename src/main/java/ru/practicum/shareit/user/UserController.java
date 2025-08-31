@@ -25,6 +25,7 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
+    @Validated({Marker.OnUpdate.class})
     public UserDto update(@PathVariable Long userId, @Valid @RequestBody UserDto userDto) {
         return userService.updateUser(userId, userDto);
     }
