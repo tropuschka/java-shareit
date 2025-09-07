@@ -23,7 +23,7 @@ public class ItemServiceImpl implements ItemService {
         checkUser(userId);
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(userId);
-        itemRepository.createItem(item);
+        itemRepository.save(item);
         return ItemMapper.toItemDto(item);
     }
 
@@ -39,36 +39,36 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto.getAvailable() != null) {
             item.setAvailable(itemDto.getAvailable());
         }
-        itemRepository.updateItem(itemId, item);
+        itemRepository.save(item);
         return ItemMapper.toItemDto(item);
     }
 
     public ItemDto getItemDtoById(Long itemId) {
-        return ItemMapper.toItemDto(itemRepository.getItemById(itemId)
+        return ItemMapper.toItemDto(itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден")));
     }
 
     public Collection<ItemDto> getUserItems(Long userId) {
         checkUser(userId);
-        return itemRepository.getUserItems(userId).stream()
+        return itemRepository.findByOwnerId(userId).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toSet());
     }
 
     public Collection<ItemDto> searchItem(String query) {
         if (query.isBlank()) return new ArrayList<>();
-        return itemRepository.searchItem(query).stream()
+        return itemRepository.search(query).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toSet());
     }
 
     private Item getItemById(Long itemId) {
-        return itemRepository.getItemById(itemId)
+        return itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден"));
     }
 
     private void checkUser(Long userId) {
-        userRepository.getUserById(userId)
+        userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
     }
 
