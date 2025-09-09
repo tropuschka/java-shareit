@@ -46,24 +46,26 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Map<ItemDto, List<Comment>> getItemDtoById(Long itemId) {
+    public ItemDto getItemDtoById(Long itemId) {
         ItemDto itemDto = ItemMapper.toItemDto(itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден")));
         List<Comment> itemComments = commentRepository.findByItemId(itemId);
-        Map<ItemDto, List<Comment>> itemWithComments = new HashMap<>();
-        itemWithComments.put(itemDto, itemComments);
-        return itemWithComments;
+        List<CommentDto> commentDto = new ArrayList<>();
+        for (Comment comment:itemComments) {
+            commentDto.add(CommentMapper.toCommentDto(comment));
+        }
+        itemDto.setComments(commentDto);
+        return itemDto;
     }
 
     @Override
-    public Map<ItemDtoWithBooking, List<Comment>> getUserItems(Long userId) {
+    public Collection<ItemDtoWithBooking> getUserItems(Long userId) {
         checkUser(userId);
         Set<ItemDtoWithBooking> userItems = itemRepository.findByOwner(userId).stream()
                 .map(ItemMapper::toItemDtoWithBooking)
                 .collect(Collectors.toSet());
 
         LocalDateTime now = LocalDateTime.now();
-        Map<ItemDtoWithBooking, List<Comment>> itemsWithComments = new HashMap<>();
         for (ItemDtoWithBooking itemDto:userItems) {
             List<Booking> itemBooking = bookingRepository.findByItemId(itemDto.getId());
             Optional<Booking> lastBookingOpt = itemBooking.stream()
@@ -76,9 +78,14 @@ public class ItemServiceImpl implements ItemService {
                     .min(Comparator.comparing(Booking::getStart));
             nextBookingOpt.ifPresent(booking -> itemDto.setNextBooking(booking.getId()));
 
-            itemsWithComments.put(itemDto, commentRepository.findByItemId(itemDto.getId()));
+            List<Comment> itemComments = commentRepository.findByItemId(itemDto.getId());
+            List<CommentDto> commentDto = new ArrayList<>();
+            for (Comment comment:itemComments) {
+                commentDto.add(CommentMapper.toCommentDto(comment));
+            }
+            itemDto.setComments(commentDto);
         }
-        return itemsWithComments;
+        return userItems;
     }
 
     @Override

@@ -39,12 +39,12 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public Map<ItemDto, List<Comment>> findItemById(@PathVariable Long itemId) {
+    public ItemDto findItemById(@PathVariable Long itemId) {
         return itemService.getItemDtoById(itemId);
     }
 
     @GetMapping
-    public Map<ItemDtoWithBooking, List<Comment>> findUserItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public Collection<ItemDtoWithBooking> findUserItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
         return itemService.getUserItems(userId);
     }
 
