@@ -180,17 +180,11 @@ public class BookingServiceImpl implements BookingService {
 
     private void checkTime(BookingDto booking) {
         LocalDateTime now = LocalDateTime.now();
-        if (booking.getEnd().isBefore(now)) {
-            throw new ConditionsNotMetException("Дата окончания бронирования не может находиться в прошлом");
-        }
         if (booking.getEnd().isBefore(booking.getStart())) {
             throw new ConditionsNotMetException("Бронирование не может заканчиваться раньше начала");
         }
         if (booking.getEnd().equals(booking.getStart())) {
             throw new ConditionsNotMetException("Время окончания бронирования не может равняться времени его начала");
-        }
-        if (booking.getStart().isBefore(now)) {
-            throw new ConditionsNotMetException("Дата начала бронирования не может находиться в прошлом");
         }
     }
 }

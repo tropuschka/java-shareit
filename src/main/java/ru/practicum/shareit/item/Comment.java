@@ -1,11 +1,10 @@
 package ru.practicum.shareit.item;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "comments")
@@ -13,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class Comment {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     private Long id;
     @Column(name = "text", nullable = false)
     private String text;
@@ -20,4 +21,8 @@ public class Comment {
     private Long itemId;
     @Column(name = "author_id", nullable = false)
     private Long authorId;
+    @Column(name = "author_name", nullable = false)
+    private String authorName;
+    @Column(name = "created", nullable = false)
+    private LocalDateTime created;
 }

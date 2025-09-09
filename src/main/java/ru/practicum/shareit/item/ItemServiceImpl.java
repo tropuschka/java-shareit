@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.exceptions.ConditionsNotMetException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
@@ -46,9 +48,29 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto getItemDtoById(Long itemId) {
-        ItemDto itemDto = ItemMapper.toItemDto(itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден")));
+    public ItemDtoWithBooking getItemDtoById(Long userId, Long itemId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден"));
+        ItemDtoWithBooking itemDto = ItemMapper.toItemDtoWithBooking(item);
+
+        if (Objects.equals(userId, item.getOwner())) {
+            LocalDateTime now = LocalDateTime.now();
+            List<Booking> itemBooking = bookingRepository.findByItemId(itemDto.getId());
+            Optional<Booking> lastBookingOpt = itemBooking.stream()
+                    .filter(b -> b.getStart().isBefore(now))
+                    .filter(b -> b.getStatus().equals(BookingStatus.APPROVED))
+                    .max(Comparator.comparing(Booking::getEnd));
+            lastBookingOpt.ifPresent(booking -> itemDto.setLastBooking(booking.getId()));
+
+            Optional<Booking> nextBookingOpt = itemBooking.stream()
+                    .filter(b -> b.getStart().isAfter(now))
+                    .min(Comparator.comparing(Booking::getStart));
+            nextBookingOpt.ifPresent(booking -> itemDto.setNextBooking(booking.getId()));
+        } else {
+            itemDto.setNextBooking(null);
+            itemDto.setLastBooking(null);
+        }
+
         List<Comment> itemComments = commentRepository.findByItemId(itemId);
         List<CommentDto> commentDto = new ArrayList<>();
         for (Comment comment:itemComments) {
@@ -70,6 +92,7 @@ public class ItemServiceImpl implements ItemService {
             List<Booking> itemBooking = bookingRepository.findByItemId(itemDto.getId());
             Optional<Booking> lastBookingOpt = itemBooking.stream()
                     .filter(b -> b.getStart().isBefore(now))
+                    .filter(b -> b.getStatus().equals(BookingStatus.APPROVED))
                     .max(Comparator.comparing(Booking::getEnd));
             lastBookingOpt.ifPresent(booking -> itemDto.setLastBooking(booking.getId()));
 
@@ -97,16 +120,22 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public CommentDto addComment(Long userId, CommentDto commentDto) {
-        checkUser(userId);
-        getItemById(commentDto.getItemId());
-        List<Booking> itemBooking = bookingRepository.findByItemId(commentDto.getItemId());
-        boolean isBooker = itemBooking.stream()
-                .filter(b -> b.getStart().isBefore(LocalDateTime.now()))
-                .anyMatch(b -> b.getBooker().equals(userId));
-        if (!isBooker) throw new ConditionsNotMetException("Оставлять комментарии можно только после аренды");
+    public CommentDto addComment(Long userId, Long itemId, CommentDto commentDto) {
+        User user = checkUser(userId);
+        getItemById(itemId);
+        List<Booking> itemBooking = bookingRepository.findByItemId(itemId);
+        LocalDateTime now = LocalDateTime.now();
+        List<Booking> isBooker = itemBooking.stream()
+                .filter(b -> b.getBooker().getId().equals(userId))
+                .filter(b -> b.getStart().isBefore(now))
+                .filter(b -> b.getStatus().equals(BookingStatus.APPROVED))
+                .toList();
+        if (isBooker.isEmpty()) throw new ConditionsNotMetException("Оставлять комментарии можно только после аренды");
         Comment comment = CommentMapper.toComment(commentDto);
         comment.setAuthorId(userId);
+        comment.setAuthorName(user.getName());
+        comment.setItemId(itemId);
+        comment.setCreated(now);
         return CommentMapper.toCommentDto(commentRepository.save(comment));
     }
 
@@ -115,8 +144,8 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден"));
     }
 
-    private void checkUser(Long userId) {
-        userRepository.findById(userId)
+    private User checkUser(Long userId) {
+        return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
     }
 

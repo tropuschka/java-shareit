@@ -9,6 +9,8 @@ public class CommentMapper {
         commentDto.setText(comment.getText());
         commentDto.setItemId(comment.getItemId());
         commentDto.setAuthorId(comment.getAuthorId());
+        commentDto.setAuthorName(comment.getAuthorName());
+        commentDto.setCreated(comment.getCreated());
         return commentDto;
     }
 
@@ -18,6 +20,8 @@ public class CommentMapper {
         comment.setText(commentDto.getText());
         comment.setItemId(commentDto.getItemId());
         comment.setAuthorId(commentDto.getAuthorId());
+        comment.setAuthorName(commentDto.getAuthorName());
+        comment.setCreated(commentDto.getCreated());
         return comment;
     }
 }
