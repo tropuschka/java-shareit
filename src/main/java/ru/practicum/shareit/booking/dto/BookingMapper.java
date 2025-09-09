@@ -15,6 +15,7 @@ public class BookingMapper {
                 booking.getStatus()
         );
     }
+
     public static ReturnBookingDto toReturnBookingDto(Booking booking) {
         return new ReturnBookingDto(
                 booking.getId(),
