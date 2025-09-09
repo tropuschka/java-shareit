@@ -2,15 +2,17 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exceptions.ConditionsNotMetException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.user.UserRepository;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Objects;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
 
     public ItemDto addItem(Long userId, ItemDto itemDto) {
         checkUser(userId);
@@ -48,11 +51,24 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден")));
     }
 
-    public Collection<ItemDto> getUserItems(Long userId) {
+    public Collection<ItemDtoWithBooking> getUserItems(Long userId) {
         checkUser(userId);
-        return itemRepository.findByOwner(userId).stream()
-                .map(ItemMapper::toItemDto)
+        Set<ItemDtoWithBooking> userItems = itemRepository.findByOwner(userId).stream()
+                .map(ItemMapper::toItemDtoWithBooking)
                 .collect(Collectors.toSet());
+        LocalDateTime now = LocalDateTime.now();
+        for (ItemDtoWithBooking itemDto:userItems) {
+            List<Booking> itemBooking = bookingRepository.findByItemId(itemDto.getId());
+            Optional<Booking> lastBookingOpt = itemBooking.stream()
+                    .filter(b -> b.getStart().isBefore(now))
+                    .max(Comparator.comparing(Booking::getEnd));
+            lastBookingOpt.ifPresent(booking -> itemDto.setLastBooking(booking.getId()));
+            Optional<Booking> nextBookingOpt = itemBooking.stream()
+                    .filter(b -> b.getStart().isAfter(now))
+                    .min(Comparator.comparing(Booking::getStart));
+            nextBookingOpt.ifPresent(booking -> itemDto.setNextBooking(booking.getId()));
+        }
+        return userItems;
     }
 
     public Collection<ItemDto> searchItem(String query) {

@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
 import ru.practicum.shareit.validation.Marker;
 
 import java.util.Collection;
@@ -40,7 +41,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public Collection<ItemDto> findUserItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public Collection<ItemDtoWithBooking> findUserItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
         return itemService.getUserItems(userId);
     }
 
