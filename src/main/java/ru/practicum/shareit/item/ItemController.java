@@ -10,8 +10,6 @@ import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
 import ru.practicum.shareit.validation.Marker;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 @Validated
 @RestController
