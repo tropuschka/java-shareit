@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
 
@@ -20,8 +21,9 @@ public class Booking {
     @ManyToOne
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;
-    @Column(name = "booker_id", nullable = false)
-    private Long booker;
+    @ManyToOne
+    @JoinColumn(name = "booker_id", nullable = false)
+    private User booker;
     @Column(name = "start_date", nullable = false)
     private LocalDateTime start;
     @Column(name = "end_date", nullable = false)

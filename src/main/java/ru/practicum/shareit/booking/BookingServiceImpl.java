@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
+import ru.practicum.shareit.booking.dto.ReturnBookingDto;
 import ru.practicum.shareit.exceptions.ConditionsNotMetException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
@@ -23,130 +25,138 @@ public class BookingServiceImpl implements BookingService {
     private final ItemRepository itemRepository;
 
     @Override
-    public BookingDto addBooking(Long userId, BookingDto bookingDto) {
-        checkUser(userId);
+    public ReturnBookingDto addBooking(Long userId, BookingDto bookingDto) {
+        User booker = checkUser(userId);
         checkTime(bookingDto);
-        Item item = checkItem(bookingDto.getItem());
-        Booking booking = BookingMapper.toBooking(bookingDto, item);
-        booking.setBooker(userId);
+        Item item = checkItem(bookingDto.getItemId());
+        Booking booking = BookingMapper.toBooking(bookingDto, item, booker);
+        booking.setBooker(booker);
         booking.setStatus(BookingStatus.WAITING);
         bookingRepository.save(booking);
-        System.out.println(booking);
-        return BookingMapper.toBookingDto(booking);
+        return BookingMapper.toReturnBookingDto(booking);
     }
 
     @Override
-    public BookingDto ownerApprove(Long userId, Long bookingId, boolean approve) {
-        checkUser(userId);
+    public ReturnBookingDto ownerApprove(Long userId, Long bookingId, boolean approve) {
         Booking booking = getBookingById(bookingId);
         Item item = checkItem(booking.getItem().getId());
         checkOwner(userId, item.getOwner());
         if (approve) booking.setStatus(BookingStatus.APPROVED);
         else booking.setStatus(BookingStatus.REJECTED);
         bookingRepository.save(booking);
-        return BookingMapper.toBookingDto(booking);
+        return BookingMapper.toReturnBookingDto(booking);
     }
 
     @Override
-    public BookingDto getBooking(Long userId, Long bookingId) {
+    public ReturnBookingDto getBooking(Long userId, Long bookingId) {
         checkUser(userId);
         Booking booking = getBookingById(bookingId);
         Item item = checkItem(booking.getItem().getId());
-        if (!userId.equals(booking.getBooker()) && !userId.equals(item.getOwner())) {
+        if (!(userId.equals(booking.getBooker().getId()) || userId.equals(item.getOwner()))) {
             throw new ConditionsNotMetException("Просматривать бронирование могут только " +
                     "арендатор и владелец бронируемого предмета");
         }
-        return BookingMapper.toBookingDto(booking);
+        return BookingMapper.toReturnBookingDto(booking);
     }
 
     @Override
-    public Collection<BookingDto> getUserBooking(Long userId, String status) {
+    public Collection<ReturnBookingDto> getUserBooking(Long userId, String status) {
         checkUser(userId);
         status = status.toLowerCase();
         LocalDateTime now = LocalDateTime.now();
-        if (status.equals("all")) {
-            return bookingRepository.findByBooker(userId).stream()
-                    .sorted(Comparator.comparing(Booking::getEnd))
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toSet());
+        switch (status) {
+            case "all" -> {
+                return bookingRepository.findByBookerId(userId).stream()
+                        .sorted(Comparator.comparing(Booking::getEnd))
+                        .map(BookingMapper::toReturnBookingDto)
+                        .collect(Collectors.toSet());
+            }
+            case "waiting", "rejected" -> {
+                BookingStatus bookingStatus = BookingStatus.valueOf(status);
+                return bookingRepository.findByBookerIdAndStatus(userId, bookingStatus).stream()
+                        .sorted(Comparator.comparing(Booking::getEnd))
+                        .map(BookingMapper::toReturnBookingDto)
+                        .collect(Collectors.toSet());
+            }
+            case "current" -> {
+                return bookingRepository.findByBookerIdAndStartIsBeforeAndEndIsAfter(userId, now, now).stream()
+                        .sorted(Comparator.comparing(Booking::getEnd))
+                        .map(BookingMapper::toReturnBookingDto)
+                        .collect(Collectors.toSet());
+            }
+            case "past" -> {
+                return bookingRepository.findByBookerIdAndEndIsBefore(userId, now).stream()
+                        .sorted(Comparator.comparing(Booking::getEnd))
+                        .map(BookingMapper::toReturnBookingDto)
+                        .collect(Collectors.toSet());
+            }
+            case "future" -> {
+                return bookingRepository.findByBookerIdAndStartIsAfter(userId, now).stream()
+                        .sorted(Comparator.comparing(Booking::getEnd))
+                        .map(BookingMapper::toReturnBookingDto)
+                        .collect(Collectors.toSet());
+            }
+            default -> throw new ConditionsNotMetException("Указан некорректный статус (status) бронирования. " +
+                    "Параметр status может принимать значения \"all\" (все бронирования; значение по умолчанию), " +
+                    "\"waiting\" (бронирования, ожидающие подтверждения от владельца предмета), " +
+                    "\"rejected\" (отклоненные бронирования), " +
+                    "\"current\" (текущие бронирования), \"past\" (завершившиеся бронирования), " +
+                    "\"future\" (будущие бронирования)");
         }
-        else if (status.equals("waiting") || status.equals("rejected")) {
-            BookingStatus bookingStatus = BookingStatus.valueOf(status);
-            return bookingRepository.findByBookerAndStatus(userId, bookingStatus).stream()
-                    .sorted(Comparator.comparing(Booking::getEnd))
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toSet());
-        } else if (status.equals("current")) {
-            return bookingRepository.findByBookerAndStartIsBeforeAndEndIsAfter(userId, now, now).stream()
-                    .sorted(Comparator.comparing(Booking::getEnd))
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toSet());
-        } else if (status.equals("past")) {
-            return bookingRepository.findByBookerAndEndIsBefore(userId, now).stream()
-                    .sorted(Comparator.comparing(Booking::getEnd))
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toSet());
-        } else if (status.equals("future")) {
-            return bookingRepository.findByBookerAndStartIsAfter(userId, now).stream()
-                    .sorted(Comparator.comparing(Booking::getEnd))
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toSet());
-        } else throw new ConditionsNotMetException("Указан некорректный статус (status) бронирования. " +
-                "Параметр status может принимать значения \"all\" (все бронирования; значение по умолчанию), " +
-                "\"waiting\" (бронирования, ожидающие подтверждения от владельца предмета), " +
-                "\"rejected\" (отклоненные бронирования), " +
-                "\"current\" (текущие бронирования), \"past\" (завершившиеся бронирования), " +
-                "\"future\" (будущие бронирования)");
     }
 
     @Override
-    public Collection<BookingDto> getOwnerBooking(Long userId, String status) {
+    public Collection<ReturnBookingDto> getOwnerBooking(Long userId, String status) {
         checkUser(userId);
         status = status.toLowerCase();
         LocalDateTime now = LocalDateTime.now();
-        if (status.equals("all")) {
-            return bookingRepository.findByItemOwner(userId).stream()
-                    .sorted(Comparator.comparing(Booking::getEnd))
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toSet());
+        switch (status) {
+            case "all" -> {
+                return bookingRepository.findByItemOwner(userId).stream()
+                        .sorted(Comparator.comparing(Booking::getEnd))
+                        .map(BookingMapper::toReturnBookingDto)
+                        .collect(Collectors.toSet());
+            }
+            case "waiting", "rejected" -> {
+                BookingStatus bookingStatus = BookingStatus.valueOf(status);
+                return bookingRepository.findByItemOwnerAndStatus(userId, bookingStatus).stream()
+                        .sorted(Comparator.comparing(Booking::getEnd))
+                        .map(BookingMapper::toReturnBookingDto)
+                        .collect(Collectors.toSet());
+            }
+            case "current" -> {
+                return bookingRepository.findByItemOwnerAndStartIsBeforeAndEndIsAfter(userId, now, now).stream()
+                        .sorted(Comparator.comparing(Booking::getEnd))
+                        .map(BookingMapper::toReturnBookingDto)
+                        .collect(Collectors.toSet());
+            }
+            case "past" -> {
+                return bookingRepository.findByItemOwnerAndEndIsBefore(userId, now).stream()
+                        .sorted(Comparator.comparing(Booking::getEnd))
+                        .map(BookingMapper::toReturnBookingDto)
+                        .collect(Collectors.toSet());
+            }
+            case "future" -> {
+                return bookingRepository.findByItemOwnerAndStartIsAfter(userId, now).stream()
+                        .sorted(Comparator.comparing(Booking::getEnd))
+                        .map(BookingMapper::toReturnBookingDto)
+                        .collect(Collectors.toSet());
+            }
+            default -> throw new ConditionsNotMetException("Указан некорректный статус (status) бронирования. " +
+                    "Параметр status может принимать значения \"all\" (все бронирования; значение по умолчанию), " +
+                    "\"waiting\" (бронирования, ожидающие подтверждения), " +
+                    "\"rejected\" (отклоненные бронирования), " +
+                    "\"current\" (текущие бронирования), \"past\" (завершившиеся бронирования), " +
+                    "\"future\" (будущие бронирования)");
         }
-        else if (status.equals("waiting") || status.equals("rejected")) {
-            BookingStatus bookingStatus = BookingStatus.valueOf(status);
-            return bookingRepository.findByItemOwnerAndStatus(userId, bookingStatus).stream()
-                    .sorted(Comparator.comparing(Booking::getEnd))
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toSet());
-        } else if (status.equals("current")) {
-            return bookingRepository.findByItemOwnerAndStartIsBeforeAndEndIsAfter(userId, now, now).stream()
-                    .sorted(Comparator.comparing(Booking::getEnd))
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toSet());
-        } else if (status.equals("past")) {
-            return bookingRepository.findByItemOwnerAndEndIsBefore(userId, now).stream()
-                    .sorted(Comparator.comparing(Booking::getEnd))
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toSet());
-        } else if (status.equals("future")) {
-            return bookingRepository.findByItemOwnerAndStartIsAfter(userId, now).stream()
-                    .sorted(Comparator.comparing(Booking::getEnd))
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toSet());
-        } else throw new ConditionsNotMetException("Указан некорректный статус (status) бронирования. " +
-                "Параметр status может принимать значения \"all\" (все бронирования; значение по умолчанию), " +
-                "\"waiting\" (бронирования, ожидающие подтверждения), " +
-                "\"rejected\" (отклоненные бронирования), " +
-                "\"current\" (текущие бронирования), \"past\" (завершившиеся бронирования), " +
-                "\"future\" (будущие бронирования)");
     }
 
-    private void checkUser(Long userId) {
-        if (userId == null) throw new NotFoundException("Пользователь не найден");
-        userRepository.findById(userId)
+    private User checkUser(Long userId) {
+        return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
     }
 
     private Item checkItem(Long itemId) {
-//        if (itemId == null) throw new NotFoundException("Предмет  не найден");
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден"));
         if (!item.getAvailable()) {

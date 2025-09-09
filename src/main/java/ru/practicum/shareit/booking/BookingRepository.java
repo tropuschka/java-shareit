@@ -6,15 +6,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-    List<Booking> findByBooker(Long userId);
+    List<Booking> findByBookerId(Long userId);
 
-    List<Booking> findByBookerAndStatus(Long userId, BookingStatus status);
+    List<Booking> findByBookerIdAndStatus(Long userId, BookingStatus status);
 
-    List<Booking> findByBookerAndStartIsBeforeAndEndIsAfter(Long userId, LocalDateTime now, LocalDateTime now1);
+    List<Booking> findByBookerIdAndStartIsBeforeAndEndIsAfter(Long userId, LocalDateTime now, LocalDateTime now1);
 
-    List<Booking> findByBookerAndEndIsBefore(Long userId, LocalDateTime now);
+    List<Booking> findByBookerIdAndEndIsBefore(Long userId, LocalDateTime now);
 
-    List<Booking> findByBookerAndStartIsAfter(Long userId, LocalDateTime now);
+    List<Booking> findByBookerIdAndStartIsAfter(Long userId, LocalDateTime now);
 
     List<Booking> findByItemOwner(Long userId);
 
