@@ -50,7 +50,7 @@ public class ItemServiceImpl implements ItemService {
 
     public Collection<ItemDto> getUserItems(Long userId) {
         checkUser(userId);
-        return itemRepository.findByOwnerId(userId).stream()
+        return itemRepository.findByOwner(userId).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toSet());
     }
