@@ -31,6 +31,7 @@ public class BookingController {
     }
 
     @PatchMapping("/{bookingId}")
+    @Validated({Marker.OnUpdate.class})
     public BookingDto ownerBookingApprove(@RequestHeader("X-Sharer-User-Id") Long userId,
                                           @PathVariable Long bookingId,
                                           @RequestParam boolean approved) {

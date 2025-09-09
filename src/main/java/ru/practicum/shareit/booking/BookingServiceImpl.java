@@ -18,17 +18,20 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
-    BookingRepository bookingRepository;
-    UserRepository userRepository;
-    ItemRepository itemRepository;
+    private final BookingRepository bookingRepository;
+    private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
 
     @Override
     public BookingDto addBooking(Long userId, BookingDto bookingDto) {
         checkUser(userId);
-        Booking booking = BookingMapper.toBooking(bookingDto, checkItem(bookingDto.getItem()));
+        checkTime(bookingDto);
+        Item item = checkItem(bookingDto.getItem());
+        Booking booking = BookingMapper.toBooking(bookingDto, item);
         booking.setBooker(userId);
         booking.setStatus(BookingStatus.WAITING);
         bookingRepository.save(booking);
+        System.out.println(booking);
         return BookingMapper.toBookingDto(booking);
     }
 
@@ -137,16 +140,23 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private void checkUser(Long userId) {
+        if (userId == null) throw new NotFoundException("Пользователь не найден");
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
     }
 
     private Item checkItem(Long itemId) {
-        return itemRepository.findById(itemId)
+//        if (itemId == null) throw new NotFoundException("Предмет  не найден");
+        Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден"));
+        if (!item.getAvailable()) {
+            throw new ConditionsNotMetException("Предмет с ID " + itemId + " недоступен для аренды");
+        }
+        return item;
     }
 
     private Booking getBookingById(Long bookingId) {
+        if (bookingId == null) throw new NotFoundException("Бронирование не найдено");
         return bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование с ID " + bookingId + " не найдено"));
     }
@@ -155,6 +165,22 @@ public class BookingServiceImpl implements BookingService {
         if (!userId.equals(ownerId)) {
             throw new ConditionsNotMetException("Подтвердить или отклонить бронирование " +
                     "может только владелец арендуемого предмета");
+        }
+    }
+
+    private void checkTime(BookingDto booking) {
+        LocalDateTime now = LocalDateTime.now();
+        if (booking.getEnd().isBefore(now)) {
+            throw new ConditionsNotMetException("Дата окончания бронирования не может находиться в прошлом");
+        }
+        if (booking.getEnd().isBefore(booking.getStart())) {
+            throw new ConditionsNotMetException("Бронирование не может заканчиваться раньше начала");
+        }
+        if (booking.getEnd().equals(booking.getStart())) {
+            throw new ConditionsNotMetException("Время окончания бронирования не может равняться времени его начала");
+        }
+        if (booking.getStart().isBefore(now)) {
+            throw new ConditionsNotMetException("Дата начала бронирования не может находиться в прошлом");
         }
     }
 }
