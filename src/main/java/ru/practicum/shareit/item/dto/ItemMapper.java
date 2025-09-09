@@ -1,9 +1,6 @@
 package ru.practicum.shareit.item.dto;
 
-import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.item.Item;
-
-import java.util.List;
 
 public class ItemMapper {
     public static ItemDto toItemDto(Item item) {
