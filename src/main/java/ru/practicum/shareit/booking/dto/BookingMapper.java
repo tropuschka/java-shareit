@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.dto;
 
 import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
@@ -28,6 +29,7 @@ public class BookingMapper {
     }
 
     public static Booking toBooking(BookingDto bookingDto, Item item, User booker) {
+        if (bookingDto.getStatus() == null) bookingDto.setStatus(BookingStatus.WAITING);
         Booking booking = new Booking();
         booking.setItem(item);
         booking.setBooker(booker);

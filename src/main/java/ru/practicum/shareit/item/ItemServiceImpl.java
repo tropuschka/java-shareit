@@ -88,24 +88,28 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toSet());
 
         LocalDateTime now = LocalDateTime.now();
+        List<Long> userItemIds = new ArrayList<>();
+        for (ItemDtoWithBooking item:userItems) userItemIds.add(item.getId());
+        List<Booking> itemBooking = bookingRepository.findByItemIdIn(userItemIds);
+        List<Comment> itemComments = commentRepository.findByItemIdIn(userItemIds);
         for (ItemDtoWithBooking itemDto:userItems) {
-            List<Booking> itemBooking = bookingRepository.findByItemId(itemDto.getId());
             Optional<Booking> lastBookingOpt = itemBooking.stream()
+                    .filter(b -> b.getItem().getId().equals(itemDto.getId()))
                     .filter(b -> b.getStart().isBefore(now))
                     .filter(b -> b.getStatus().equals(BookingStatus.APPROVED))
                     .max(Comparator.comparing(Booking::getEnd));
             lastBookingOpt.ifPresent(booking -> itemDto.setLastBooking(booking.getId()));
 
             Optional<Booking> nextBookingOpt = itemBooking.stream()
+                    .filter(b -> b.getItem().getId().equals(itemDto.getId()))
                     .filter(b -> b.getStart().isAfter(now))
                     .min(Comparator.comparing(Booking::getStart));
             nextBookingOpt.ifPresent(booking -> itemDto.setNextBooking(booking.getId()));
 
-            List<Comment> itemComments = commentRepository.findByItemId(itemDto.getId());
-            List<CommentDto> commentDto = new ArrayList<>();
-            for (Comment comment:itemComments) {
-                commentDto.add(CommentMapper.toCommentDto(comment));
-            }
+            List<CommentDto> commentDto = itemComments.stream()
+                    .filter(c -> c.getItemId().equals(itemDto.getId()))
+                    .map(CommentMapper::toCommentDto)
+                    .toList();
             itemDto.setComments(commentDto);
         }
         return userItems;
@@ -131,11 +135,7 @@ public class ItemServiceImpl implements ItemService {
                 .filter(b -> b.getStatus().equals(BookingStatus.APPROVED))
                 .toList();
         if (isBooker.isEmpty()) throw new ConditionsNotMetException("Оставлять комментарии можно только после аренды");
-        Comment comment = CommentMapper.toComment(commentDto);
-        comment.setAuthorId(userId);
-        comment.setAuthorName(user.getName());
-        comment.setItemId(itemId);
-        comment.setCreated(now);
+        Comment comment = CommentMapper.toComment(commentDto, userId, user.getName(), itemId, now);
         return CommentMapper.toCommentDto(commentRepository.save(comment));
     }
 

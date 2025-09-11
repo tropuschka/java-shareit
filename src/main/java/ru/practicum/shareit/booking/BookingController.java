@@ -27,20 +27,20 @@ public class BookingController {
     @PostMapping
     @Validated({Marker.OnCreate.class})
     public ReturnBookingDto addBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                 @Valid @RequestBody BookingDto bookingDto) {
+                                       @Valid @RequestBody BookingDto bookingDto) {
         return bookingService.addBooking(userId, bookingDto);
     }
 
     @PatchMapping("/{bookingId}")
-    @Validated({Marker.OnUpdate.class})
     public ReturnBookingDto ownerBookingApprove(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                          @PathVariable Long bookingId,
+                                                @PathVariable Long bookingId,
                                           @RequestParam boolean approved) {
         return bookingService.ownerApprove(userId, bookingId, approved);
     }
 
     @GetMapping("/{bookingId}")
-    public ReturnBookingDto getBooking(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long bookingId) {
+    public ReturnBookingDto getBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                       @PathVariable Long bookingId) {
         return bookingService.getBooking(userId, bookingId);
     }
 
@@ -52,7 +52,7 @@ public class BookingController {
 
     @GetMapping("/owner")
     public Collection<ReturnBookingDto> getOwnerBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                 @RequestParam(defaultValue = "all") String state) {
+                                                        @RequestParam(defaultValue = "all") String state) {
         return bookingService.getOwnerBooking(userId, state);
     }
 }

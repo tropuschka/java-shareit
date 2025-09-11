@@ -15,6 +15,7 @@ import ru.practicum.shareit.user.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,11 +28,9 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public ReturnBookingDto addBooking(Long userId, BookingDto bookingDto) {
         User booker = checkUser(userId);
-        checkTime(bookingDto);
         Item item = checkItem(bookingDto.getItemId());
+        checkTime(bookingDto);
         Booking booking = BookingMapper.toBooking(bookingDto, item, booker);
-        booking.setBooker(booker);
-        booking.setStatus(BookingStatus.WAITING);
         bookingRepository.save(booking);
         return BookingMapper.toReturnBookingDto(booking);
     }
@@ -41,8 +40,13 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = getBookingById(bookingId);
         Item item = checkItem(booking.getItem().getId());
         checkOwner(userId, item.getOwner());
-        if (approve) booking.setStatus(BookingStatus.APPROVED);
-        else booking.setStatus(BookingStatus.REJECTED);
+        if (booking.getEnd().isBefore(LocalDateTime.now()) || booking.getStatus().equals(BookingStatus.CANCELED)) {
+            throw new ConditionsNotMetException("Бронирование уже завершено");
+        }
+        if (booking.getStatus().equals(BookingStatus.WAITING)) {
+            if (approve) booking.setStatus(BookingStatus.APPROVED);
+            else booking.setStatus(BookingStatus.REJECTED);
+        }
         bookingRepository.save(booking);
         return BookingMapper.toReturnBookingDto(booking);
     }
@@ -62,35 +66,34 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Collection<ReturnBookingDto> getUserBooking(Long userId, String status) {
         checkUser(userId);
-        status = status.toLowerCase();
         LocalDateTime now = LocalDateTime.now();
-        switch (status) {
-            case "all" -> {
+        BookingStatus bookingStatus = BookingStatus.valueOf(status.toUpperCase());
+        switch (bookingStatus) {
+            case BookingStatus.ALL -> {
                 return bookingRepository.findByBookerId(userId).stream()
                         .sorted(Comparator.comparing(Booking::getEnd))
                         .map(BookingMapper::toReturnBookingDto)
                         .collect(Collectors.toSet());
             }
-            case "waiting", "rejected" -> {
-                BookingStatus bookingStatus = BookingStatus.valueOf(status);
+            case BookingStatus.WAITING, BookingStatus.REJECTED -> {
                 return bookingRepository.findByBookerIdAndStatus(userId, bookingStatus).stream()
                         .sorted(Comparator.comparing(Booking::getEnd))
                         .map(BookingMapper::toReturnBookingDto)
                         .collect(Collectors.toSet());
             }
-            case "current" -> {
+            case BookingStatus.CURRENT -> {
                 return bookingRepository.findByBookerIdAndStartIsBeforeAndEndIsAfter(userId, now, now).stream()
                         .sorted(Comparator.comparing(Booking::getEnd))
                         .map(BookingMapper::toReturnBookingDto)
                         .collect(Collectors.toSet());
             }
-            case "past" -> {
+            case BookingStatus.PAST -> {
                 return bookingRepository.findByBookerIdAndEndIsBefore(userId, now).stream()
                         .sorted(Comparator.comparing(Booking::getEnd))
                         .map(BookingMapper::toReturnBookingDto)
                         .collect(Collectors.toSet());
             }
-            case "future" -> {
+            case BookingStatus.FUTURE -> {
                 return bookingRepository.findByBookerIdAndStartIsAfter(userId, now).stream()
                         .sorted(Comparator.comparing(Booking::getEnd))
                         .map(BookingMapper::toReturnBookingDto)
@@ -108,35 +111,34 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Collection<ReturnBookingDto> getOwnerBooking(Long userId, String status) {
         checkUser(userId);
-        status = status.toLowerCase();
         LocalDateTime now = LocalDateTime.now();
-        switch (status) {
-            case "all" -> {
+        BookingStatus bookingStatus = BookingStatus.valueOf(status);
+        switch (bookingStatus) {
+            case BookingStatus.ALL -> {
                 return bookingRepository.findByItemOwner(userId).stream()
                         .sorted(Comparator.comparing(Booking::getEnd))
                         .map(BookingMapper::toReturnBookingDto)
                         .collect(Collectors.toSet());
             }
-            case "waiting", "rejected" -> {
-                BookingStatus bookingStatus = BookingStatus.valueOf(status);
+            case BookingStatus.WAITING, BookingStatus.REJECTED -> {
                 return bookingRepository.findByItemOwnerAndStatus(userId, bookingStatus).stream()
                         .sorted(Comparator.comparing(Booking::getEnd))
                         .map(BookingMapper::toReturnBookingDto)
                         .collect(Collectors.toSet());
             }
-            case "current" -> {
+            case BookingStatus.CURRENT -> {
                 return bookingRepository.findByItemOwnerAndStartIsBeforeAndEndIsAfter(userId, now, now).stream()
                         .sorted(Comparator.comparing(Booking::getEnd))
                         .map(BookingMapper::toReturnBookingDto)
                         .collect(Collectors.toSet());
             }
-            case "past" -> {
+            case BookingStatus.PAST -> {
                 return bookingRepository.findByItemOwnerAndEndIsBefore(userId, now).stream()
                         .sorted(Comparator.comparing(Booking::getEnd))
                         .map(BookingMapper::toReturnBookingDto)
                         .collect(Collectors.toSet());
             }
-            case "future" -> {
+            case BookingStatus.FUTURE -> {
                 return bookingRepository.findByItemOwnerAndStartIsAfter(userId, now).stream()
                         .sorted(Comparator.comparing(Booking::getEnd))
                         .map(BookingMapper::toReturnBookingDto)
@@ -186,5 +188,14 @@ public class BookingServiceImpl implements BookingService {
         if (booking.getEnd().equals(booking.getStart())) {
             throw new ConditionsNotMetException("Время окончания бронирования не может равняться времени его начала");
         }
+        List<Booking> bookingList = bookingRepository.findByItemIdAndStatus(booking.getItemId(), BookingStatus.APPROVED)
+                .stream()
+                .filter(b -> ((b.getStart().isBefore(booking.getStart()) && b.getEnd().isAfter(booking.getStart()))
+                    || (b.getStart().isBefore(booking.getEnd()) && b.getEnd().isAfter(booking.getEnd()))
+                    || (b.getStart().isAfter(booking.getStart()) && b.getEnd().isBefore(booking.getEnd()))))
+                .toList();
+        System.out.println(booking);
+        System.out.println(bookingList);
+        if (!bookingList.isEmpty()) throw new ConditionsNotMetException("В указанное время предмет уже забронирован");
     }
 }

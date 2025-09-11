@@ -14,7 +14,6 @@ public class BookingDto {
     private Long id;
     @NotNull(groups = Marker.OnCreate.class, message = "Бронируемый предмет должен быть указан")
     private Long itemId;
-//    private Item item;
     private Long booker;
     @NotNull(groups = Marker.OnCreate.class, message = "Дата начала бронирования должна быть указана")
     private LocalDateTime start;
