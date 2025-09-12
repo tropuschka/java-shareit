@@ -152,5 +152,6 @@ public class ItemServiceImpl implements ItemService {
             .filter(b -> b.getItem().getId().equals(itemDto.getId()))
             .filter(b -> b.getStart().isAfter(now))
             .min(Comparator.comparing(Booking::getStart));
-        nextBookingOpt.ifPresent(booking -> itemDto.setNextBooking(booking.getId()));}
+        nextBookingOpt.ifPresent(booking -> itemDto.setNextBooking(booking.getId()));
+    }
 }
