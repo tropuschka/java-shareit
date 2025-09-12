@@ -56,16 +56,8 @@ public class ItemServiceImpl implements ItemService {
         if (Objects.equals(userId, item.getOwner())) {
             LocalDateTime now = LocalDateTime.now();
             List<Booking> itemBooking = bookingRepository.findByItemId(itemDto.getId());
-            Optional<Booking> lastBookingOpt = itemBooking.stream()
-                    .filter(b -> b.getStart().isBefore(now))
-                    .filter(b -> b.getStatus().equals(BookingStatus.APPROVED))
-                    .max(Comparator.comparing(Booking::getEnd));
-            lastBookingOpt.ifPresent(booking -> itemDto.setLastBooking(booking.getId()));
-
-            Optional<Booking> nextBookingOpt = itemBooking.stream()
-                    .filter(b -> b.getStart().isAfter(now))
-                    .min(Comparator.comparing(Booking::getStart));
-            nextBookingOpt.ifPresent(booking -> itemDto.setNextBooking(booking.getId()));
+            setLastBooking(itemBooking, itemDto, now);
+            setNextBooking(itemBooking, itemDto, now);
         } else {
             itemDto.setNextBooking(null);
             itemDto.setLastBooking(null);
@@ -93,18 +85,8 @@ public class ItemServiceImpl implements ItemService {
         List<Booking> itemBooking = bookingRepository.findByItemIdIn(userItemIds);
         List<Comment> itemComments = commentRepository.findByItemIdIn(userItemIds);
         for (ItemDtoWithBooking itemDto:userItems) {
-            Optional<Booking> lastBookingOpt = itemBooking.stream()
-                    .filter(b -> b.getItem().getId().equals(itemDto.getId()))
-                    .filter(b -> b.getStart().isBefore(now))
-                    .filter(b -> b.getStatus().equals(BookingStatus.APPROVED))
-                    .max(Comparator.comparing(Booking::getEnd));
-            lastBookingOpt.ifPresent(booking -> itemDto.setLastBooking(booking.getId()));
-
-            Optional<Booking> nextBookingOpt = itemBooking.stream()
-                    .filter(b -> b.getItem().getId().equals(itemDto.getId()))
-                    .filter(b -> b.getStart().isAfter(now))
-                    .min(Comparator.comparing(Booking::getStart));
-            nextBookingOpt.ifPresent(booking -> itemDto.setNextBooking(booking.getId()));
+            setLastBooking(itemBooking, itemDto, now);
+            setNextBooking(itemBooking, itemDto, now);
 
             List<CommentDto> commentDto = itemComments.stream()
                     .filter(c -> c.getItemId().equals(itemDto.getId()))
@@ -155,4 +137,20 @@ public class ItemServiceImpl implements ItemService {
                     " не является владельцем предмета с ID " + item.getId());
         }
     }
+
+    private void setLastBooking(List<Booking> itemBooking, ItemDtoWithBooking itemDto, LocalDateTime now) {
+        Optional<Booking> lastBookingOpt = itemBooking.stream()
+                .filter(b -> b.getItem().getId().equals(itemDto.getId()))
+                .filter(b -> b.getStart().isBefore(now))
+                .filter(b -> b.getStatus().equals(BookingStatus.APPROVED))
+                .max(Comparator.comparing(Booking::getEnd));
+        lastBookingOpt.ifPresent(booking -> itemDto.setLastBooking(booking.getId()));
+    }
+
+    private void setNextBooking(List<Booking> itemBooking, ItemDtoWithBooking itemDto, LocalDateTime now) {
+        Optional<Booking> nextBookingOpt = itemBooking.stream()
+            .filter(b -> b.getItem().getId().equals(itemDto.getId()))
+            .filter(b -> b.getStart().isAfter(now))
+            .min(Comparator.comparing(Booking::getStart));
+        nextBookingOpt.ifPresent(booking -> itemDto.setNextBooking(booking.getId()));}
 }
