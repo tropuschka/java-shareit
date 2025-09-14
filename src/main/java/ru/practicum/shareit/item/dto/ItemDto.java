@@ -20,4 +20,5 @@ public class ItemDto {
     @NotNull(groups = Marker.OnCreate.class, message = "Статус должен быть указан")
     private Boolean available;
     private List<CommentDto> comments = new ArrayList<>();
+    private Long request;
 }

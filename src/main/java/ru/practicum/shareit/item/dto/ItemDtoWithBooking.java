@@ -16,4 +16,5 @@ public class ItemDtoWithBooking {
     private Long lastBooking;
     private Long nextBooking;
     private List<CommentDto> comments = new ArrayList<>();
+    private Long request;
 }
