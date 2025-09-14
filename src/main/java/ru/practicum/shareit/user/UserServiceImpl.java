@@ -8,6 +8,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,7 +19,7 @@ public class UserServiceImpl implements UserService {
     public UserDto createUser(UserDto userDto) {
         validateEmail(userDto);
         User user = UserMapper.toUser(userDto);
-        return UserMapper.toUserDto(userRepository.addUser(user));
+        return UserMapper.toUserDto(userRepository.save(user));
     }
 
     @Override
@@ -31,36 +32,36 @@ public class UserServiceImpl implements UserService {
             validateEmail(userDto, userId);
             user.setEmail(userDto.getEmail());
         }
-        userRepository.updateUser(userId, user);
+        userRepository.save(user);
         return UserMapper.toUserDto(user);
     }
 
     @Override
     public UserDto findUserDtoById(Long userId) {
-        return UserMapper.toUserDto(userRepository.getUserById(userId)
+        return UserMapper.toUserDto(userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден")));
     }
 
     @Override
     public void deleteUser(Long userId) {
-        findUserById(userId);
-        userRepository.deleteUser(userId);
+        User user = findUserById(userId);
+        userRepository.delete(user);
     }
 
     private User findUserById(Long userId) {
-        return userRepository.getUserById(userId)
+        return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден"));
     }
 
     private void validateEmail(UserDto userDto, Long userId) {
-        boolean duplicatedEmail = userRepository.getAll().stream()
-                .anyMatch(u -> u.getEmail().equals(userDto.getEmail()) && !Objects.equals(u.getId(), userId));
-        if (duplicatedEmail) throw new DuplicationException("Пользователь с такой почтой уже существует");
+        Optional<User> duplicatedEmail = Optional.ofNullable(userRepository.findByEmail(userDto.getEmail()));
+        if (duplicatedEmail.isPresent() && !Objects.equals(duplicatedEmail.get().getId(), userId)) {
+            throw new DuplicationException("Пользователь с такой почтой уже существует");
+        }
     }
 
     private void validateEmail(UserDto userDto) {
-        boolean duplicatedEmail = userRepository.getAll().stream()
-                .anyMatch(u -> u.getEmail().equals(userDto.getEmail()));
-        if (duplicatedEmail) throw new DuplicationException("Пользователь с такой почтой уже существует");
+        Optional<User> duplicatedEmail = Optional.ofNullable(userRepository.findByEmail(userDto.getEmail()));
+        if (duplicatedEmail.isPresent()) throw new DuplicationException("Пользователь с такой почтой уже существует");
     }
 }

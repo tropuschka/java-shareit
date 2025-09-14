@@ -2,12 +2,15 @@ package ru.practicum.shareit.item.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import ru.practicum.shareit.validation.Marker;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ItemDto {
     private Long id;
     @NotBlank(groups = Marker.OnCreate.class, message = "Название предмета не должно быть пустым")
@@ -16,4 +19,5 @@ public class ItemDto {
     private String description;
     @NotNull(groups = Marker.OnCreate.class, message = "Статус должен быть указан")
     private Boolean available;
+    private List<CommentDto> comments = new ArrayList<>();
 }
