@@ -2,6 +2,7 @@ package practicum.ru.shareit.booking;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -13,11 +14,14 @@ import java.util.Collection;
 @Validated
 @RestController
 @RequestMapping(path = "/bookings")
-@RequiredArgsConstructor
 public class BookingController {
     private final BookingClient bookingClient;
     private final String USER_ID_HEADER = "X-Sharer-User-Id";
 
+    @Autowired
+    public BookingController (BookingClient bookingClient) {
+        this.bookingClient = bookingClient;
+    }
 
     @PostMapping
     @Validated({Marker.OnCreate.class})

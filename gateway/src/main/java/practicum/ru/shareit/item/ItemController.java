@@ -2,6 +2,7 @@ package practicum.ru.shareit.item;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -12,10 +13,14 @@ import practicum.ru.shareit.validation.Marker;
 @Validated
 @RequestMapping(path = "/items")
 @RestController
-@RequiredArgsConstructor
 public class ItemController {
     private final ItemClient itemClient;
     private final String USER_ID_HEADER = "X-Sharer-User-Id";
+
+    @Autowired
+    public ItemController (ItemClient itemClient) {
+        this.itemClient = itemClient;
+    }
 
     @PostMapping
     @Validated({Marker.OnCreate.class})

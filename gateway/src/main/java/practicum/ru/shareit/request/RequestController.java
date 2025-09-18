@@ -2,6 +2,7 @@ package practicum.ru.shareit.request;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -11,11 +12,15 @@ import practicum.ru.shareit.validation.Marker;
 
 @Controller
 @RequestMapping(path = "/requests")
-@RequiredArgsConstructor
 @Validated
 public class RequestController {
     private final RequestClient requestClient;
     private final String USER_ID_HEADER = "X-Sharer-User-Id";
+
+    @Autowired
+    public RequestController (RequestClient requestClient) {
+        this.requestClient = requestClient;
+    }
 
     @PostMapping
     @Validated({Marker.OnCreate.class})
