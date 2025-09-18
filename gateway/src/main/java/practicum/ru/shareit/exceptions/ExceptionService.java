@@ -26,7 +26,7 @@ public class ExceptionService {
 
     @ExceptionHandler(value = ConditionsNotMetException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse throwConditionsNotMet(final ConditionsNotMetException e) {;
+    public ErrorResponse throwConditionsNotMet(final ConditionsNotMetException e) {
         return ErrorResponse.create(e, HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
