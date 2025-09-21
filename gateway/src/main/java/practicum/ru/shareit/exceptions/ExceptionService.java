@@ -21,12 +21,14 @@ public class ExceptionService {
     @ExceptionHandler(value = NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse throwNotFound(final NotFoundException e) {
+        log.error(e.getMessage());
         return ErrorResponse.create(e, HttpStatus.NOT_FOUND, e.getMessage());
     }
 
     @ExceptionHandler(value = ConditionsNotMetException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse throwConditionsNotMet(final ConditionsNotMetException e) {
+        log.error(e.getMessage());
         return ErrorResponse.create(e, HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
@@ -62,6 +64,7 @@ public class ExceptionService {
     @ExceptionHandler(value = DuplicationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse throwDuplicationException(final DuplicationException e) {
+        log.error(e.getMessage());
         return ErrorResponse.create(e, HttpStatus.CONFLICT, e.getMessage());
     }
 }

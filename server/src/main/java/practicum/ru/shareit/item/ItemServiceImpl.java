@@ -7,7 +7,7 @@ import practicum.ru.shareit.booking.BookingRepository;
 import practicum.ru.shareit.booking.BookingStatus;
 import practicum.ru.shareit.exceptions.ConditionsNotMetException;
 import practicum.ru.shareit.exceptions.NotFoundException;
-import ru.practicum.shareit.item.dto.*;
+import practicum.ru.shareit.item.dto.*;
 import practicum.ru.shareit.user.User;
 import practicum.ru.shareit.user.UserRepository;
 
