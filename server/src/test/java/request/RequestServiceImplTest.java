@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import practicum.ru.shareit.ShareItServer;
-import practicum.ru.shareit.exceptions.ConditionsNotMetException;
 import practicum.ru.shareit.exceptions.NotFoundException;
 import practicum.ru.shareit.request.Request;
 import practicum.ru.shareit.request.RequestRepository;

@@ -3,12 +3,9 @@ package practicum.ru.shareit.request;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import practicum.ru.shareit.item.Item;
 import practicum.ru.shareit.user.User;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "requests")

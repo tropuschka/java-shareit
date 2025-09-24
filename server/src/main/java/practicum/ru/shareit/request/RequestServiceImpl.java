@@ -3,7 +3,6 @@ package practicum.ru.shareit.request;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import practicum.ru.shareit.exceptions.ConditionsNotMetException;
 import practicum.ru.shareit.exceptions.NotFoundException;
 import practicum.ru.shareit.request.dto.RequestDto;
 import practicum.ru.shareit.request.dto.RequestMapper;
