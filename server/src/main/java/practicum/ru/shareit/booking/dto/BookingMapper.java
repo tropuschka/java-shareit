@@ -6,17 +6,6 @@ import practicum.ru.shareit.item.Item;
 import practicum.ru.shareit.user.User;
 
 public class BookingMapper {
-    public static BookingDto toBookingDto(Booking booking) {
-        return new BookingDto(
-                booking.getId(),
-                booking.getItem().getId(),
-                booking.getBooker().getId(),
-                booking.getStart(),
-                booking.getEnd(),
-                booking.getStatus()
-        );
-    }
-
     public static ReturnBookingDto toReturnBookingDto(Booking booking) {
         return new ReturnBookingDto(
                 booking.getId(),

@@ -56,6 +56,7 @@ public class ItemServiceImplTest {
     private Item item;
     private Booking booking;
     private Request request;
+    private Comment comment;
 
     @BeforeEach
     void setUp() {
@@ -97,6 +98,14 @@ public class ItemServiceImplTest {
         request.setDescription("Woman hat");
         request.setCreated(LocalDateTime.now());
         request = entityManager.persistAndFlush(request);
+
+        comment = new Comment();
+        comment.setText("Text");
+        comment.setItemId(item.getId());
+        comment.setAuthorId(savedUser2.getId());
+        comment.setAuthorName(savedUser2.getName());
+        comment.setCreated(LocalDateTime.now());
+        comment = entityManager.persistAndFlush(comment);
     }
 
     @Test
@@ -173,6 +182,7 @@ public class ItemServiceImplTest {
         newItemDto.setName("Man Hat");
         newItemDto.setDescription("Red hat with laces");
         newItemDto.setAvailable(false);
+        newItemDto.setRequest(request.getId());
 
         ItemDto updatedItemDto = itemService.updateItem(savedUser.getId(), item.getId(), newItemDto);
         assertThat(updatedItemDto.getId()).isNotNull();
