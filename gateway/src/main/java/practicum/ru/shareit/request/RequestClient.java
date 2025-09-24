@@ -3,10 +3,12 @@ package practicum.ru.shareit.request;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import practicum.ru.shareit.client.BaseClient;
 import practicum.ru.shareit.request.dto.RequestDto;
 
+@Service
 public class RequestClient extends BaseClient {
     private static final String API_PREFIX = "/requests";
 

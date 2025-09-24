@@ -3,6 +3,7 @@ package practicum.ru.shareit.item;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import practicum.ru.shareit.client.BaseClient;
 import practicum.ru.shareit.item.dto.CommentDto;
@@ -10,6 +11,7 @@ import practicum.ru.shareit.item.dto.ItemDto;
 
 import java.util.Map;
 
+@Service
 public class ItemClient extends BaseClient {
     private static final String API_PREFIX = "/items";
 

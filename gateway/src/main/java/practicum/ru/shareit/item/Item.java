@@ -1,10 +1,8 @@
 package practicum.ru.shareit.item;
 
-import jakarta.persistence.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-@Entity
 @Data
 @RequiredArgsConstructor
 public class Item {
