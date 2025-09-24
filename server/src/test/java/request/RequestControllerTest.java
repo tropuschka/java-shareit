@@ -101,12 +101,12 @@ public class RequestControllerTest {
     }
 
     @Test
-    public void getRequestById() throws Exception
-    {
+    public void getRequestById() throws Exception {
         when(requestService.findById(anyLong())).thenReturn(returnRequestDto);
         mockMvc.perform(get("/requests/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.description").value("Description"));
         verify(requestService, times(1)).findById(1L);
-    }}
+    }
+}

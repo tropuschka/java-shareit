@@ -284,7 +284,8 @@ public class BookingServiceImplTest {
     }
 
     @Test
-    void getBookingBooker() {ReturnBookingDto foundBookingDto = bookingService.getBooking(booker.getId(), waitingBooking.getId());
+    void getBookingBooker() {
+        ReturnBookingDto foundBookingDto = bookingService.getBooking(booker.getId(), waitingBooking.getId());
         assertThat(foundBookingDto).isNotNull();
         assertThat(foundBookingDto.getItem()).isEqualTo(savedItem);
         assertThat(foundBookingDto.getBooker()).isEqualTo(booker);
