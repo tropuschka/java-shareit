@@ -362,7 +362,7 @@ public class ItemServiceImplTest {
         assertThat(createdComment.getItemId()).isEqualTo(item.getId());
         assertThat(createdComment.getAuthorId()).isEqualTo(savedUser2.getId());
         assertThat(createdComment.getAuthorName()).isEqualTo("Clothilde");
-        assertThat(createdComment.getText()).isEqualTo("Comment");        
+        assertThat(createdComment.getText()).isEqualTo("Comment");
     }
 
     @Test
