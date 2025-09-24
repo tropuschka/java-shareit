@@ -17,7 +17,7 @@ import java.util.Collection;
 @RequestMapping(path = "/requests")
 public class RequestController {
     private final RequestService requestService;
-    private final String USER_ID_HEADER = "X-Sharer-User-Id";
+    private final String userIdHeader = "X-Sharer-User-Id";
 
     @Autowired
     public RequestController(RequestService requestService) {
@@ -26,13 +26,13 @@ public class RequestController {
 
     @PostMapping
     @Validated({Marker.OnCreate.class})
-    public RequestDto addRequest(@RequestHeader(USER_ID_HEADER) Long userId,
+    public RequestDto addRequest(@RequestHeader(userIdHeader) Long userId,
                                  @Valid @RequestBody RequestDto requestDto) {
         return requestService.addRequest(userId, requestDto);
     }
 
     @GetMapping
-    public Collection<RequestDto> getUserRequests(@RequestHeader(USER_ID_HEADER) Long userId) {
+    public Collection<RequestDto> getUserRequests(@RequestHeader(userIdHeader) Long userId) {
         return requestService.getUserRequests(userId);
     }
 

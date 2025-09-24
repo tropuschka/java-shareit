@@ -39,7 +39,7 @@ public class RequestControllerTest {
     private RequestDto requestDto;
     private RequestDto returnRequestDto;
     private User requestor = new User();
-    private final String USER_ID_HEADER = "X-Sharer-User-Id";
+    private final String userIdHeader = "X-Sharer-User-Id";
 
     @BeforeEach
     void setUp() {
@@ -56,7 +56,7 @@ public class RequestControllerTest {
         when(requestService.addRequest(anyLong(), any(RequestDto.class))).thenReturn(returnRequestDto);
 
         mockMvc.perform(post("/requests")
-                        .header(USER_ID_HEADER, 1)
+                        .header(userIdHeader, 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
@@ -80,7 +80,7 @@ public class RequestControllerTest {
         when(requestService.getUserRequests(anyLong())).thenReturn(List.of(returnRequestDto));
 
         mockMvc.perform(get("/requests")
-                .header(USER_ID_HEADER, 1))
+                .header(userIdHeader, 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(1L))

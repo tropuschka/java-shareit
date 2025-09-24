@@ -40,7 +40,7 @@ public class ItemControllerTest {
     private ItemDtoWithBooking returnItemDtoWithBooking;
     private CommentDto commentDto;
     private CommentDto returnCommentDto;
-    private final String USER_ID_HEADER = "X-Sharer-User-Id";
+    private final String userIdHeader = "X-Sharer-User-Id";
 
     @BeforeEach
     void setUp() {
@@ -70,7 +70,7 @@ public class ItemControllerTest {
         when(itemService.addItem(anyLong(), any(ItemDto.class))).thenReturn(returnItemDto);
 
         mockMvc.perform(post("/items")
-                    .header(USER_ID_HEADER, 1)
+                    .header(userIdHeader, 1)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(itemDto)))
                 .andExpect(status().isOk())
@@ -116,7 +116,7 @@ public class ItemControllerTest {
         when(itemService.updateItem(anyLong(), anyLong(), any(ItemDto.class))).thenReturn(itemDto);
 
         mockMvc.perform(patch("/items/1")
-                        .header(USER_ID_HEADER, 1)
+                        .header(userIdHeader, 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(itemDto)))
                 .andExpect(status().isOk())
@@ -129,7 +129,7 @@ public class ItemControllerTest {
         when(itemService.getItemDtoById(anyLong(), anyLong())).thenReturn(returnItemDtoWithBooking);
 
         mockMvc.perform(get("/items/1")
-                .header(USER_ID_HEADER, 1))
+                .header(userIdHeader, 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L));
         verify(itemService, times(1)).getItemDtoById(1L, 1L);
@@ -140,7 +140,7 @@ public class ItemControllerTest {
         when(itemService.getUserItems(anyLong())).thenReturn(List.of(returnItemDtoWithBooking));
 
         mockMvc.perform(get("/items")
-                .header(USER_ID_HEADER, 1))
+                .header(userIdHeader, 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(1L))
@@ -166,7 +166,7 @@ public class ItemControllerTest {
         when(itemService.addComment(anyLong(), anyLong(), any(CommentDto.class))).thenReturn(returnCommentDto);
 
         mockMvc.perform(post("/items/1/comment")
-                .header(USER_ID_HEADER, 1)
+                .header(userIdHeader, 1)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(commentDto)))
                 .andExpect(status().isOk())

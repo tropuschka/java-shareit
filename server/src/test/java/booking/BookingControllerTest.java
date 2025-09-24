@@ -44,7 +44,7 @@ public class BookingControllerTest {
     private MockMvc mockMvc;
     private BookingDto bookingDto;
     private ReturnBookingDto returnBookingDto;
-    private final String USER_ID_HEADER = "X-Sharer-User-Id";
+    private final String userIdHeader = "X-Sharer-User-Id";
     private Item item;
     private User user;
 
@@ -73,7 +73,7 @@ public class BookingControllerTest {
         when(bookingService.addBooking(anyLong(), any(BookingDto.class))).thenReturn(returnBookingDto);
 
         mockMvc.perform(post("/bookings")
-                .header(USER_ID_HEADER, 1)
+                .header(userIdHeader, 1)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(bookingDto)))
                 .andExpect(status().isOk())
@@ -120,7 +120,7 @@ public class BookingControllerTest {
         when(bookingService.ownerApprove(anyLong(), anyLong(), anyBoolean())).thenReturn(returnBookingDto);
 
         mockMvc.perform(patch("/bookings/1")
-                .header(USER_ID_HEADER, 1)
+                .header(userIdHeader, 1)
                 .param("approved", "true"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L));
@@ -132,7 +132,7 @@ public class BookingControllerTest {
         when(bookingService.getBooking(anyLong(), anyLong())).thenReturn(returnBookingDto);
 
         mockMvc.perform(get("/bookings/1")
-                .header(USER_ID_HEADER, 1))
+                .header(userIdHeader, 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L));
         verify(bookingService, times(1)).getBooking(1L, 1L);
@@ -143,7 +143,7 @@ public class BookingControllerTest {
         when(bookingService.getUserBooking(anyLong(), anyString())).thenReturn(List.of(returnBookingDto));
 
         mockMvc.perform(get("/bookings")
-                .header(USER_ID_HEADER, 1)
+                .header(userIdHeader, 1)
                 .param("state", "all"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
@@ -156,7 +156,7 @@ public class BookingControllerTest {
         when(bookingService.getOwnerBooking(anyLong(), anyString())).thenReturn(List.of(returnBookingDto));
 
         mockMvc.perform(get("/bookings/owner")
-                        .header(USER_ID_HEADER, 1)
+                        .header(userIdHeader, 1)
                         .param("state", "all"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
