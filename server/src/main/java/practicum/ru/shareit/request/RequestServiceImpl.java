@@ -5,15 +5,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import practicum.ru.shareit.exceptions.ConditionsNotMetException;
 import practicum.ru.shareit.exceptions.NotFoundException;
-import practicum.ru.shareit.item.Item;
-import practicum.ru.shareit.item.ItemRepository;
 import practicum.ru.shareit.request.dto.RequestDto;
 import practicum.ru.shareit.request.dto.RequestMapper;
 import practicum.ru.shareit.user.User;
 import practicum.ru.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +21,6 @@ import java.util.stream.Collectors;
 public class RequestServiceImpl implements RequestService {
     private final RequestRepository requestRepository;
     private final UserRepository userRepository;
-    private final ItemRepository itemRepository;
 
     @Override
     public RequestDto addRequest(Long userId, RequestDto requestDto) {
@@ -39,16 +35,6 @@ public class RequestServiceImpl implements RequestService {
     public Collection<RequestDto> getUserRequests(Long userId) {
         checkUser(userId);
         List<Request> userRequests = requestRepository.getByRequestorIdOrderByCreatedDesc(userId);
-        List<Long> userRequestsId = new ArrayList<>();
-        for (Request request:userRequests) userRequestsId.add(request.getId());
-        List<Item> requestedItems = itemRepository.findByRequestIn(userRequestsId);
-        for (Request request:userRequests) {
-            List<Item> requestItems = requestedItems.stream()
-                            .filter(i -> i.getRequest().equals(request.getId()))
-                                    .toList();
-            request.setItems(requestItems);
-        }
-
         return userRequests.stream()
                 .map(RequestMapper::toRequestDto)
                 .collect(Collectors.toSet());
@@ -56,7 +42,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public Collection<RequestDto> getAllRequests() {
-        return requestRepository.findAll(Sort.sort(LocalDateTime.class)).stream()
+        return requestRepository.findAll(Sort.by("created").descending()).stream()
                 .map(RequestMapper::toRequestDto)
                 .collect(Collectors.toSet());
     }
@@ -64,10 +50,8 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public RequestDto findById(Long requestId) {
         Optional<Request> requestOpt = Optional.of(requestRepository.findById(requestId)
-                .orElseThrow(() -> new ConditionsNotMetException("Запрос с ID " + requestId + " не найден")));
+                .orElseThrow(() -> new NotFoundException("Запрос с ID " + requestId + " не найден")));
         Request request = requestOpt.get();
-        List<Item> requestItems = itemRepository.findByRequest(requestId);
-        request.setItems(requestItems);
         return RequestMapper.toRequestDto(request);
     }
 

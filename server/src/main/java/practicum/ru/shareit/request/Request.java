@@ -26,5 +26,4 @@ public class Request {
     private User requestor;
     @Column(name = "created", nullable = false)
     private LocalDateTime created;
-    private List<Item> items = new ArrayList<>();
 }

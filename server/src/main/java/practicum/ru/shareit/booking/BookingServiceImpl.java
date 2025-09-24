@@ -30,6 +30,7 @@ public class BookingServiceImpl implements BookingService {
     public ReturnBookingDto addBooking(Long userId, BookingDto bookingDto) {
         User booker = checkUser(userId);
         Item item = checkItem(bookingDto.getItemId());
+        checkItemAvailable(item);
         checkTime(bookingDto);
         Booking booking = BookingMapper.toBooking(bookingDto, item, booker);
         bookingRepository.save(booking);
@@ -68,7 +69,12 @@ public class BookingServiceImpl implements BookingService {
     public Collection<ReturnBookingDto> getUserBooking(Long userId, String status) {
         checkUser(userId);
         LocalDateTime now = LocalDateTime.now();
-        BookingState bookingState = BookingState.valueOf(status.toUpperCase());
+        BookingState bookingState;
+        try {
+            bookingState = BookingState.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return new ArrayList<>();
+        }
         switch (bookingState) {
             case BookingState.ALL -> {
                 return bookingRepository.findByBookerId(userId).stream()
@@ -84,7 +90,9 @@ public class BookingServiceImpl implements BookingService {
                         .collect(Collectors.toSet());
             }
             case BookingState.CURRENT -> {
-                return bookingRepository.findByBookerIdAndStartIsBeforeAndEndIsAfter(userId, now, now).stream()
+                return bookingRepository
+                        .findByBookerIdAndStartIsBeforeAndEndIsAfterAndStatus(userId, now, now, BookingStatus.APPROVED)
+                        .stream()
                         .sorted(Comparator.comparing(Booking::getEnd))
                         .map(BookingMapper::toReturnBookingDto)
                         .collect(Collectors.toSet());
@@ -111,7 +119,12 @@ public class BookingServiceImpl implements BookingService {
     public Collection<ReturnBookingDto> getOwnerBooking(Long userId, String status) {
         checkUser(userId);
         LocalDateTime now = LocalDateTime.now();
-        BookingState bookingState = BookingState.valueOf(status);
+        BookingState bookingState;
+        try {
+            bookingState = BookingState.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return new ArrayList<>();
+        }
         switch (bookingState) {
             case BookingState.ALL -> {
                 return bookingRepository.findByItemOwner(userId).stream()
@@ -127,7 +140,9 @@ public class BookingServiceImpl implements BookingService {
                         .collect(Collectors.toSet());
             }
             case BookingState.CURRENT -> {
-                return bookingRepository.findByItemOwnerAndStartIsBeforeAndEndIsAfter(userId, now, now).stream()
+                return bookingRepository
+                        .findByItemOwnerAndStartIsBeforeAndEndIsAfterAndStatus(userId, now, now, BookingStatus.APPROVED)
+                        .stream()
                         .sorted(Comparator.comparing(Booking::getEnd))
                         .map(BookingMapper::toReturnBookingDto)
                         .collect(Collectors.toSet());
@@ -156,12 +171,14 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private Item checkItem(Long itemId) {
-        Item item = itemRepository.findById(itemId)
+        return itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Предмет с ID " + itemId + " не найден"));
+    }
+
+    private void checkItemAvailable(Item item) {
         if (!item.getAvailable()) {
-            throw new ConditionsNotMetException("Предмет с ID " + itemId + " недоступен для аренды");
+            throw new ConditionsNotMetException("Предмет с ID " + item.getId() + " недоступен для аренды");
         }
-        return item;
     }
 
     private Booking getBookingById(Long bookingId) {

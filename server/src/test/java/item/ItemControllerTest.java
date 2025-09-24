@@ -23,8 +23,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -110,6 +109,19 @@ public class ItemControllerTest {
         final ConditionsNotMetException exception = Assertions.assertThrows(ConditionsNotMetException.class,
                 () -> itemService.addItem(1L, itemDto));
         Assertions.assertEquals("Статус должен быть указан", exception.getMessage());
+    }
+
+    @Test
+    public void changeItem() throws  Exception {
+        when(itemService.updateItem(anyLong(), anyLong(), any(ItemDto.class))).thenReturn(itemDto);
+
+        mockMvc.perform(patch("/items/1")
+                        .header(USER_ID_HEADER, 1)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(itemDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L));
+        verify(itemService, times(1)).updateItem(1L, 1L, itemDto);
     }
 
     @Test

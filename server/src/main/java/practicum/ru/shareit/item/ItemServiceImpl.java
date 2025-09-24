@@ -8,6 +8,7 @@ import practicum.ru.shareit.booking.BookingStatus;
 import practicum.ru.shareit.exceptions.ConditionsNotMetException;
 import practicum.ru.shareit.exceptions.NotFoundException;
 import practicum.ru.shareit.item.dto.*;
+import practicum.ru.shareit.request.RequestRepository;
 import practicum.ru.shareit.user.User;
 import practicum.ru.shareit.user.UserRepository;
 
@@ -22,10 +23,14 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final RequestRepository requestRepository;
 
     @Override
     public ItemDto addItem(Long userId, ItemDto itemDto) {
         checkUser(userId);
+        if (itemDto.getRequest() != null) {
+            checkRequest(itemDto.getRequest());
+        }
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(userId);
         return ItemMapper.toItemDto(itemRepository.save(item));
@@ -43,6 +48,10 @@ public class ItemServiceImpl implements ItemService {
         }
         if (itemDto.getAvailable() != null) {
             item.setAvailable(itemDto.getAvailable());
+        }
+        if (itemDto.getRequest() != null) {
+            checkRequest(itemDto.getRequest());
+            item.setRequest(itemDto.getRequest());
         }
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
@@ -136,6 +145,11 @@ public class ItemServiceImpl implements ItemService {
             throw new ConditionsNotMetException("Пользователь с ID " + userId +
                     " не является владельцем предмета с ID " + item.getId());
         }
+    }
+
+    private void checkRequest(Long requestId) {
+        requestRepository.findById(requestId)
+                .orElseThrow(() -> new NotFoundException("Запрос с ID " + requestId + " не найден"));
     }
 
     private void setLastBooking(List<Booking> itemBooking, ItemDtoWithBooking itemDto, LocalDateTime now) {
