@@ -114,7 +114,7 @@ public class ItemServiceImplTest {
         itemDto.setName("Fork");
         itemDto.setDescription("Silver fork");
         itemDto.setAvailable(true);
-        itemDto.setRequest(request.getId());
+        itemDto.setRequestId(request.getId());
         ItemDto createdItemDto = itemService.addItem(savedUser.getId(), itemDto);
 
         assertThat(createdItemDto.getId()).isNotNull();
@@ -169,7 +169,7 @@ public class ItemServiceImplTest {
         itemDto.setName("Fork");
         itemDto.setDescription("Silver fork");
         itemDto.setAvailable(true);
-        itemDto.setRequest(request.getId());
+        itemDto.setRequestId(request.getId());
         requestRepository.delete(request);
         final NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.addItem(savedUser.getId(), itemDto));
@@ -182,7 +182,7 @@ public class ItemServiceImplTest {
         newItemDto.setName("Man Hat");
         newItemDto.setDescription("Red hat with laces");
         newItemDto.setAvailable(false);
-        newItemDto.setRequest(request.getId());
+        newItemDto.setRequestId(request.getId());
 
         ItemDto updatedItemDto = itemService.updateItem(savedUser.getId(), item.getId(), newItemDto);
         assertThat(updatedItemDto.getId()).isNotNull();
@@ -287,7 +287,7 @@ public class ItemServiceImplTest {
     @Test
     void updateItemNotExistingRequest() {
         ItemDto newItemDto = new ItemDto();
-        newItemDto.setRequest(request.getId());
+        newItemDto.setRequestId(request.getId());
         requestRepository.delete(request);
 
         final NotFoundException exception = assertThrows(NotFoundException.class,
