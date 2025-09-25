@@ -9,9 +9,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import practicum.ru.shareit.validation.ValidationErrorResponse;
 import practicum.ru.shareit.validation.Violation;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
@@ -33,7 +35,7 @@ public class ExceptionService {
     @ResponseBody
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse onConstraintValidationException(
+    public ValidationErrorResponse onConstraintValidationException(
             ConstraintViolationException e
     ) {
         final List<Violation> violations = e.getConstraintViolations().stream()
@@ -43,20 +45,20 @@ public class ExceptionService {
                                 violation.getMessage()
                         )
                 )
-                .toList();
-        return ErrorResponse.create(e, HttpStatus.BAD_REQUEST, violations.getFirst().getMessage());
+                .collect(Collectors.toList());
+        return new ValidationErrorResponse(violations);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    public ErrorResponse onMethodArgumentNotValidException(
+    public ValidationErrorResponse onMethodArgumentNotValidException(
             MethodArgumentNotValidException e
     ) {
         final List<Violation> violations = e.getBindingResult().getFieldErrors().stream()
                 .map(error -> new Violation(error.getField(), error.getDefaultMessage()))
-                .toList();
-        return ErrorResponse.create(e, HttpStatus.BAD_REQUEST, violations.getFirst().getMessage());
+                .collect(Collectors.toList());
+        return new ValidationErrorResponse(violations);
     }
 
     @ExceptionHandler(value = DuplicationException.class)
