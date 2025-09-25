@@ -22,5 +22,5 @@ public class Item {
     @Column(name = "is_available", nullable = false)
     private Boolean available;
     @Column(name = "request_id")
-    private Long request;
+    private Long requestId;
 }

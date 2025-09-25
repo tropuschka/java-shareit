@@ -39,7 +39,7 @@ public class ItemController {
     @GetMapping("/{itemId}")
     public ResponseEntity<Object> findItemById(@RequestHeader(userIdHeader) Long userId,
                                            @PathVariable Long itemId) {
-        return itemClient.getItem(userId, itemId);
+        return itemClient.getItem(itemId, userId);
     }
 
     @GetMapping

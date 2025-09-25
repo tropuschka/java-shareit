@@ -28,8 +28,8 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto addItem(Long userId, ItemDto itemDto) {
         checkUser(userId);
-        if (itemDto.getRequest() != null) {
-            checkRequest(itemDto.getRequest());
+        if (itemDto.getRequestId() != null) {
+            checkRequest(itemDto.getRequestId());
         }
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(userId);
@@ -49,9 +49,9 @@ public class ItemServiceImpl implements ItemService {
         if (itemDto.getAvailable() != null) {
             item.setAvailable(itemDto.getAvailable());
         }
-        if (itemDto.getRequest() != null) {
-            checkRequest(itemDto.getRequest());
-            item.setRequest(itemDto.getRequest());
+        if (itemDto.getRequestId() != null) {
+            checkRequest(itemDto.getRequestId());
+            item.setRequestId(itemDto.getRequestId());
         }
         return ItemMapper.toItemDto(itemRepository.save(item));
     }

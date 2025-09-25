@@ -39,14 +39,14 @@ public class RequestServiceImpl implements RequestService {
         List<Request> userRequests = requestRepository.getByRequestorIdOrderByCreatedDesc(userId);
         List<Long> requestIds = new ArrayList<>();
         for (Request request : userRequests) requestIds.add(request.getId());
-        List<Item> providedItems = itemRepository.findByRequestIn(requestIds);
+        List<Item> providedItems = itemRepository.findByRequestIdIn(requestIds);
         List<RequestDto> userRequestDtos = userRequests.stream()
                 .map(RequestMapper::toRequestDto)
                 .toList();
         for (RequestDto request : userRequestDtos) {
             List<Item> requestItems = new ArrayList<>();
             for (Item item : providedItems) {
-                if (item.getRequest().equals(request.getId())) requestItems.add(item);
+                if (item.getRequestId().equals(request.getId())) requestItems.add(item);
             }
             request.setItems(requestItems);
         }
@@ -59,11 +59,11 @@ public class RequestServiceImpl implements RequestService {
                 .map(RequestMapper::toRequestDto).toList();
         List<Long> requestIds = new ArrayList<>();
         for (RequestDto request : userRequestDtos) requestIds.add(request.getId());
-        List<Item> providedItems = itemRepository.findByRequestIn(requestIds);
+        List<Item> providedItems = itemRepository.findByRequestIdIn(requestIds);
         for (RequestDto request : userRequestDtos) {
             List<Item> requestItems = new ArrayList<>();
             for (Item item : providedItems) {
-                if (item.getRequest().equals(request.getId())) requestItems.add(item);
+                if (item.getRequestId().equals(request.getId())) requestItems.add(item);
             }
             request.setItems(requestItems);
         }
@@ -75,7 +75,7 @@ public class RequestServiceImpl implements RequestService {
         Optional<Request> requestOpt = Optional.of(requestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException("Запрос с ID " + requestId + " не найден")));
         RequestDto request = RequestMapper.toRequestDto(requestOpt.get());
-        request.setItems(itemRepository.findByRequestIn(List.of(request.getId())));
+        request.setItems(itemRepository.findByRequestIdIn(List.of(request.getId())));
         return request;
     }
 
