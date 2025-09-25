@@ -195,7 +195,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private void checkTime(BookingDto booking) {
-        LocalDateTime now = LocalDateTime.now();
         if (booking.getEnd().isBefore(booking.getStart())) {
             throw new ConditionsNotMetException("Бронирование не может заканчиваться раньше начала");
         }
@@ -206,8 +205,6 @@ public class BookingServiceImpl implements BookingService {
                 .stream()
                 .filter(b -> (b.getStart().isBefore(booking.getEnd()) && booking.getStart().isBefore(b.getEnd())))
                 .toList();
-        System.out.println(booking);
-        System.out.println(bookingList);
         if (!bookingList.isEmpty()) throw new ConditionsNotMetException("В указанное время предмет уже забронирован");
     }
 }

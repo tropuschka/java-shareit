@@ -2,13 +2,16 @@ package practicum.ru.shareit.request.dto;
 
 import practicum.ru.shareit.request.Request;
 
+import java.util.ArrayList;
+
 public class RequestMapper {
     public static RequestDto toRequestDto(Request request) {
         return new RequestDto(
                 request.getId(),
                 request.getDescription(),
                 request.getRequestor(),
-                request.getCreated()
+                request.getCreated(),
+                new ArrayList<>()
         );
     }
 
