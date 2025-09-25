@@ -47,8 +47,8 @@ public class RequestControllerTest {
         requestor.setId(1L);
         requestor.setName("Foreydoun");
         requestor.setEmail("foreydoun@mail.com");
-        requestDto = new RequestDto(null, "Description", null, null);
-        returnRequestDto = new RequestDto(1L, "Description", requestor, LocalDateTime.now());
+        requestDto = new RequestDto(null, "Description", null, null, null);
+        returnRequestDto = new RequestDto(1L, "Description", requestor, LocalDateTime.now(), null);
     }
 
     @Test
@@ -66,7 +66,7 @@ public class RequestControllerTest {
 
     @Test
     public void createRequestWithoutDescription() throws Exception {
-        requestDto = new RequestDto(null, null, null, null);
+        requestDto = new RequestDto(null, null, null, null, null);
         when(requestService.addRequest(anyLong(), any(RequestDto.class)))
                 .thenThrow(new ConditionsNotMetException("Описание запроса не должно быть пустым"));
 

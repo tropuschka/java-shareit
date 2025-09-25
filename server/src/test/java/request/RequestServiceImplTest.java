@@ -62,7 +62,7 @@ public class RequestServiceImplTest {
 
     @Test
     void addRequest() {
-        RequestDto requestDto = new RequestDto(null, "Request", null, null);
+        RequestDto requestDto = new RequestDto(null, "Request", null, null, null);
         RequestDto createdRequestDto = requestService.addRequest(user.getId(), requestDto);
 
         assertThat(createdRequestDto.getId()).isNotNull();
@@ -79,7 +79,7 @@ public class RequestServiceImplTest {
 
     @Test
     void addRequestNotExistingUser() {
-        RequestDto requestDto = new RequestDto(null, "Request", null, null);
+        RequestDto requestDto = new RequestDto(null, "Request", null, null, null);
         userRepository.delete(user);
 
         final NotFoundException exception = assertThrows(NotFoundException.class,
