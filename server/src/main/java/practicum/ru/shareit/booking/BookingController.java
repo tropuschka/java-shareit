@@ -1,19 +1,15 @@
 package practicum.ru.shareit.booking;
 
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import practicum.ru.shareit.booking.dto.BookingDto;
 import practicum.ru.shareit.booking.dto.ReturnBookingDto;
-import practicum.ru.shareit.validation.Marker;
 
 import java.util.Collection;
 
 /**
  * TODO Sprint add-bookings.
  */
-@Validated
 @RestController
 @RequestMapping(path = "/bookings")
 public class BookingController {
@@ -26,9 +22,8 @@ public class BookingController {
     }
 
     @PostMapping
-    @Validated({Marker.OnCreate.class})
     public ReturnBookingDto addBooking(@RequestHeader(userIdHeader) Long userId,
-                                       @Valid @RequestBody BookingDto bookingDto) {
+                                       @RequestBody BookingDto bookingDto) {
         return bookingService.addBooking(userId, bookingDto);
     }
 

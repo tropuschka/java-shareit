@@ -122,7 +122,7 @@ public class ItemServiceImpl implements ItemService {
         LocalDateTime now = LocalDateTime.now();
         List<Booking> isBooker = itemBooking.stream()
                 .filter(b -> b.getBooker().getId().equals(userId))
-                .filter(b -> b.getStart().isBefore(now))
+                .filter(b -> b.getEnd().isBefore(now))
                 .filter(b -> b.getStatus().equals(BookingStatus.APPROVED))
                 .toList();
         if (isBooker.isEmpty()) throw new ConditionsNotMetException("Оставлять комментарии можно только после аренды");
