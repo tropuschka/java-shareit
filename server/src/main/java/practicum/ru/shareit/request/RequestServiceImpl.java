@@ -12,13 +12,11 @@ import practicum.ru.shareit.request.dto.RequestDto;
 import practicum.ru.shareit.request.dto.RequestMapper;
 import practicum.ru.shareit.user.User;
 import practicum.ru.shareit.user.UserRepository;
-import practicum.ru.shareit.user.dto.UserMapper;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -76,13 +74,13 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public RequestDto findById(Long requestId) {
-        Optional<Request> requestOpt = Optional.of(requestRepository.findById(requestId)
-                .orElseThrow(() -> new NotFoundException("Запрос с ID " + requestId + " не найден")));
-        RequestDto request = RequestMapper.toRequestDto(requestOpt.get());
-        List<ItemDto> requestItems = itemRepository.findByRequestIdIn(List.of(request.getId())).stream()
+        Request request = requestRepository.findById(requestId)
+                .orElseThrow(() -> new NotFoundException("Запрос с ID " + requestId + " не найден"));
+        RequestDto requestDto = RequestMapper.toRequestDto(request);
+        List<ItemDto> requestItems = itemRepository.findByRequestIdIn(List.of(requestDto.getId())).stream()
                         .map(ItemMapper::toItemDto).toList();
-        request.setItems(requestItems);
-        return request;
+        requestDto.setItems(requestItems);
+        return requestDto;
     }
 
     private User checkUser(Long userId) {
