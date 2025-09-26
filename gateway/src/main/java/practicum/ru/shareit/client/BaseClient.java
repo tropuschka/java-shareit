@@ -1,5 +1,6 @@
 package practicum.ru.shareit.client;
 
+import lombok.Getter;
 import org.springframework.http.*;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -8,8 +9,10 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Map;
 
+@Getter
 public class BaseClient {
     protected final RestTemplate rest;
+    public static final String userIdHeader = "X-Sharer-User-Id";
 
     public BaseClient(RestTemplate rest) {
         this.rest = rest;
