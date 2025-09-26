@@ -1,9 +1,7 @@
 package practicum.ru.shareit.item.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import practicum.ru.shareit.validation.Marker;
 
 import java.time.LocalDateTime;
 
@@ -11,7 +9,6 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class CommentDto {
     private Long id;
-    @NotBlank(groups = Marker.OnCreate.class, message = "Текст комментария не должен быть пустым")
     private String text;
     private Long itemId;
     private Long authorId;

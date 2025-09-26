@@ -1,18 +1,14 @@
 package practicum.ru.shareit.request;
 
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import practicum.ru.shareit.request.dto.RequestDto;
-import practicum.ru.shareit.validation.Marker;
 
 import java.util.Collection;
 
 /**
  * TODO Sprint add-item-requests.
  */
-@Validated
 @RestController
 @RequestMapping(path = "/requests")
 public class RequestController {
@@ -25,9 +21,8 @@ public class RequestController {
     }
 
     @PostMapping
-    @Validated({Marker.OnCreate.class})
     public RequestDto addRequest(@RequestHeader(userIdHeader) Long userId,
-                                 @Valid @RequestBody RequestDto requestDto) {
+                                 @RequestBody RequestDto requestDto) {
         return requestService.addRequest(userId, requestDto);
     }
 
