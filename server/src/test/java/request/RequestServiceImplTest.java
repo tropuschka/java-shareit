@@ -16,7 +16,6 @@ import practicum.ru.shareit.request.RequestServiceImpl;
 import practicum.ru.shareit.request.dto.RequestDto;
 import practicum.ru.shareit.request.dto.RequestMapper;
 import practicum.ru.shareit.user.User;
-import practicum.ru.shareit.user.UserRepository;
 import practicum.ru.shareit.user.dto.UserMapper;
 
 import java.time.LocalDateTime;
@@ -36,8 +35,6 @@ public class RequestServiceImplTest {
     @Autowired
     private RequestRepository requestRepository;
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private TestEntityManager entityManager;
     private Request request;
     private User user;
@@ -45,7 +42,6 @@ public class RequestServiceImplTest {
     @BeforeEach
     void setUp() {
         requestRepository.deleteAll();
-        userRepository.deleteAll();
         entityManager.flush();
         entityManager.clear();
 
@@ -81,7 +77,7 @@ public class RequestServiceImplTest {
     @Test
     void addRequestNotExistingUser() {
         RequestDto requestDto = new RequestDto(null, "Request", null, null, null);
-        userRepository.delete(user);
+        entityManager.remove(user);
 
         final NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> requestService.addRequest(user.getId(), requestDto));
@@ -97,7 +93,7 @@ public class RequestServiceImplTest {
 
     @Test
     void findNotExistingUserRequests() {
-        userRepository.delete(user);
+        entityManager.remove(user);
 
         final NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> requestService.getUserRequests(user.getId()));

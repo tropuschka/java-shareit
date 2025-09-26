@@ -16,9 +16,7 @@ import practicum.ru.shareit.booking.dto.ReturnBookingDto;
 import practicum.ru.shareit.exceptions.ConditionsNotMetException;
 import practicum.ru.shareit.exceptions.NotFoundException;
 import practicum.ru.shareit.item.Item;
-import practicum.ru.shareit.item.ItemRepository;
 import practicum.ru.shareit.user.User;
-import practicum.ru.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -37,10 +35,6 @@ public class BookingServiceImplTest {
     @Autowired
     BookingRepository bookingRepository;
     @Autowired
-    ItemRepository itemRepository;
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
     TestEntityManager entityManager;
     private Item savedItem;
     private User itemOwner;
@@ -56,8 +50,6 @@ public class BookingServiceImplTest {
     @BeforeEach
     void setUp() {
         bookingRepository.deleteAll();
-        itemRepository.deleteAll();
-        userRepository.deleteAll();
         entityManager.flush();
         entityManager.clear();
 
@@ -155,7 +147,7 @@ public class BookingServiceImplTest {
 
     @Test
     void addBookingNotExistingUser() {
-        userRepository.delete(booker);
+        entityManager.remove(booker);
         LocalDateTime start = LocalDateTime.now().plusHours(5);
         LocalDateTime end = LocalDateTime.now().plusHours(10);
         BookingDto bookingDto = new BookingDto(null, savedItem.getId(), booker.getId(), start, end, null);
@@ -167,7 +159,7 @@ public class BookingServiceImplTest {
 
     @Test
     void addBookingNotExistingItem() {
-        itemRepository.delete(savedItem);
+        entityManager.remove(savedItem);
         LocalDateTime start = LocalDateTime.now().plusHours(5);
         LocalDateTime end = LocalDateTime.now().plusHours(10);
         BookingDto bookingDto = new BookingDto(null, savedItem.getId(), booker.getId(), start, end, null);
@@ -256,7 +248,7 @@ public class BookingServiceImplTest {
 
     @Test
     void ownerApproveNotExistingItem() {
-        itemRepository.delete(savedItem);
+        entityManager.remove(savedItem);
         final NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> bookingService.ownerApprove(itemOwner.getId(), waitingBooking.getId(), true));
         assertEquals("Предмет с ID " + savedItem.getId() + " не найден", exception.getMessage());
@@ -296,7 +288,7 @@ public class BookingServiceImplTest {
 
     @Test
     void getBookingNotExistingUser() {
-        userRepository.delete(booker);
+        entityManager.remove(booker);
         final NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> bookingService.getBooking(booker.getId(), waitingBooking.getId()));
         assertEquals("Пользователь с ID " + booker.getId() + " не найден", exception.getMessage());
@@ -320,7 +312,7 @@ public class BookingServiceImplTest {
 
     @Test
     void getBookingNotExistingItem() {
-        itemRepository.delete(savedItem);
+        entityManager.remove(savedItem);
         final NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> bookingService.getBooking(booker.getId(), waitingBooking.getId()));
         assertEquals("Предмет с ID " + savedItem.getId() + " не найден", exception.getMessage());
@@ -344,7 +336,7 @@ public class BookingServiceImplTest {
 
     @Test
     void getNotExistingUserBooking() {
-        userRepository.delete(booker);
+        entityManager.remove(booker);
         final NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> bookingService.getUserBooking(booker.getId(), "all"));
         assertEquals("Пользователь с ID " + booker.getId() + " не найден", exception.getMessage());
@@ -418,7 +410,7 @@ public class BookingServiceImplTest {
 
     @Test
     void getNotExistingOwnerBooking() {
-        userRepository.delete(itemOwner);
+        entityManager.remove(itemOwner);
         final NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> bookingService.getOwnerBooking(itemOwner.getId(), "all"));
         assertEquals("Пользователь с ID " + itemOwner.getId() + " не найден", exception.getMessage());

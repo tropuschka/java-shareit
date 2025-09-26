@@ -10,7 +10,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import practicum.ru.shareit.ShareItServer;
 import practicum.ru.shareit.booking.Booking;
-import practicum.ru.shareit.booking.BookingRepository;
 import practicum.ru.shareit.booking.BookingStatus;
 import practicum.ru.shareit.exceptions.ConditionsNotMetException;
 import practicum.ru.shareit.exceptions.NotFoundException;
@@ -20,9 +19,7 @@ import practicum.ru.shareit.item.dto.ItemDto;
 import practicum.ru.shareit.item.dto.ItemDtoWithBooking;
 import practicum.ru.shareit.item.dto.ItemMapper;
 import practicum.ru.shareit.request.Request;
-import practicum.ru.shareit.request.RequestRepository;
 import practicum.ru.shareit.user.User;
-import practicum.ru.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -42,13 +39,7 @@ public class ItemServiceImplTest {
     @Autowired
     private ItemRepository itemRepository;
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private BookingRepository bookingRepository;
-    @Autowired
     private CommentRepository commentRepository;
-    @Autowired
-    private RequestRepository requestRepository;
     @Autowired
     private TestEntityManager entityManager;
     private User savedUser;
@@ -61,10 +52,7 @@ public class ItemServiceImplTest {
     @BeforeEach
     void setUp() {
         itemRepository.deleteAll();
-        userRepository.deleteAll();
-        bookingRepository.deleteAll();
         commentRepository.deleteAll();
-        requestRepository.deleteAll();
         entityManager.flush();
         entityManager.clear();
 
@@ -157,7 +145,7 @@ public class ItemServiceImplTest {
         itemDto.setName("Fork");
         itemDto.setDescription("Silver fork");
         itemDto.setAvailable(true);
-        userRepository.delete(savedUser);
+        entityManager.remove(savedUser);
         final NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.addItem(savedUser.getId(), itemDto));
         assertEquals("Пользователь с ID " + savedUser.getId() + " не найден", exception.getMessage());
@@ -170,7 +158,7 @@ public class ItemServiceImplTest {
         itemDto.setDescription("Silver fork");
         itemDto.setAvailable(true);
         itemDto.setRequestId(request.getId());
-        requestRepository.delete(request);
+        entityManager.remove(request);
         final NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.addItem(savedUser.getId(), itemDto));
         assertEquals("Запрос с ID " + request.getId() + " не найден", exception.getMessage());
@@ -255,7 +243,7 @@ public class ItemServiceImplTest {
     void updateItemNotExistingUser() {
         ItemDto newItemDto = new ItemDto();
         newItemDto.setAvailable(false);
-        userRepository.delete(savedUser);
+        entityManager.remove(savedUser);
 
         final NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.updateItem(savedUser.getId(), item.getId(), newItemDto));
@@ -288,7 +276,7 @@ public class ItemServiceImplTest {
     void updateItemNotExistingRequest() {
         ItemDto newItemDto = new ItemDto();
         newItemDto.setRequestId(request.getId());
-        requestRepository.delete(request);
+        entityManager.remove(request);
 
         final NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.updateItem(savedUser.getId(), item.getId(), newItemDto));
@@ -321,7 +309,7 @@ public class ItemServiceImplTest {
 
     @Test
     void getNotExistingUserItems() {
-        userRepository.delete(savedUser);
+        entityManager.remove(savedUser);
         final NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.getUserItems(savedUser.getId()));
         assertEquals("Пользователь с ID " + savedUser.getId() + " не найден", exception.getMessage());
@@ -379,7 +367,7 @@ public class ItemServiceImplTest {
     void addCommentNotExistingUser() {
         CommentDto commentDto = new CommentDto();
         commentDto.setText("Comment");
-        userRepository.delete(savedUser2);
+        entityManager.remove(savedUser2);
 
         final NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.addComment(savedUser2.getId(), item.getId(), commentDto));
@@ -401,7 +389,7 @@ public class ItemServiceImplTest {
     void addCommentNotBooker() {
         CommentDto commentDto = new CommentDto();
         commentDto.setText("Comment");
-        bookingRepository.delete(booking);
+        entityManager.remove(booking);
 
         final ConditionsNotMetException exception = assertThrows(ConditionsNotMetException.class,
                 () -> itemService.addComment(savedUser2.getId(), item.getId(), commentDto));
