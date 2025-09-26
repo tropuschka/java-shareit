@@ -17,6 +17,7 @@ import practicum.ru.shareit.request.dto.RequestDto;
 import practicum.ru.shareit.request.dto.RequestMapper;
 import practicum.ru.shareit.user.User;
 import practicum.ru.shareit.user.UserRepository;
+import practicum.ru.shareit.user.dto.UserMapper;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -67,7 +68,7 @@ public class RequestServiceImplTest {
 
         assertThat(createdRequestDto.getId()).isNotNull();
         assertThat(createdRequestDto.getDescription()).isEqualTo("Request");
-        assertThat(createdRequestDto.getRequestor()).isEqualTo(user);
+        assertThat(createdRequestDto.getRequestor()).isEqualTo(UserMapper.toUserDto(user));
         assertThat(createdRequestDto.getCreated()).isNotNull();
 
         Request savedRequest = entityManager.find(Request.class, createdRequestDto.getId());
@@ -128,7 +129,7 @@ public class RequestServiceImplTest {
     void findById() {
         RequestDto foundRequestDto = requestService.findById(request.getId());
         assertThat(foundRequestDto).isNotNull();
-        assertThat(foundRequestDto.getRequestor()).isEqualTo(user);
+        assertThat(foundRequestDto.getRequestor()).isEqualTo(UserMapper.toUserDto(user));
         assertThat(foundRequestDto.getDescription()).isEqualTo("Request");
     }
 

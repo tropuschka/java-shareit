@@ -6,10 +6,13 @@ import org.springframework.stereotype.Service;
 import practicum.ru.shareit.exceptions.NotFoundException;
 import practicum.ru.shareit.item.Item;
 import practicum.ru.shareit.item.ItemRepository;
+import practicum.ru.shareit.item.dto.ItemDto;
+import practicum.ru.shareit.item.dto.ItemMapper;
 import practicum.ru.shareit.request.dto.RequestDto;
 import practicum.ru.shareit.request.dto.RequestMapper;
 import practicum.ru.shareit.user.User;
 import practicum.ru.shareit.user.UserRepository;
+import practicum.ru.shareit.user.dto.UserMapper;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -27,9 +30,9 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public RequestDto addRequest(Long userId, RequestDto requestDto) {
         User requestor = checkUser(userId);
-        requestDto.setRequestor(requestor);
         requestDto.setCreated(LocalDateTime.now());
         Request request = RequestMapper.toRequest(requestDto);
+        request.setRequestor(requestor);
         return RequestMapper.toRequestDto(requestRepository.save(request));
     }
 
@@ -44,9 +47,9 @@ public class RequestServiceImpl implements RequestService {
                 .map(RequestMapper::toRequestDto)
                 .toList();
         for (RequestDto request : userRequestDtos) {
-            List<Item> requestItems = new ArrayList<>();
+            List<ItemDto> requestItems = new ArrayList<>();
             for (Item item : providedItems) {
-                if (item.getRequestId().equals(request.getId())) requestItems.add(item);
+                if (item.getRequestId().equals(request.getId())) requestItems.add(ItemMapper.toItemDto(item));
             }
             request.setItems(requestItems);
         }
@@ -61,10 +64,11 @@ public class RequestServiceImpl implements RequestService {
         for (RequestDto request : userRequestDtos) requestIds.add(request.getId());
         List<Item> providedItems = itemRepository.findByRequestIdIn(requestIds);
         for (RequestDto request : userRequestDtos) {
-            List<Item> requestItems = new ArrayList<>();
+            List<ItemDto> requestItems = new ArrayList<>();
             for (Item item : providedItems) {
-                if (item.getRequestId().equals(request.getId())) requestItems.add(item);
+                if (item.getRequestId().equals(request.getId())) requestItems.add(ItemMapper.toItemDto(item));
             }
+
             request.setItems(requestItems);
         }
         return userRequestDtos;
@@ -75,7 +79,9 @@ public class RequestServiceImpl implements RequestService {
         Optional<Request> requestOpt = Optional.of(requestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException("Запрос с ID " + requestId + " не найден")));
         RequestDto request = RequestMapper.toRequestDto(requestOpt.get());
-        request.setItems(itemRepository.findByRequestIdIn(List.of(request.getId())));
+        List<ItemDto> requestItems = itemRepository.findByRequestIdIn(List.of(request.getId())).stream()
+                        .map(ItemMapper::toItemDto).toList();
+        request.setItems(requestItems);
         return request;
     }
 

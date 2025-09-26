@@ -16,6 +16,7 @@ import practicum.ru.shareit.request.RequestController;
 import practicum.ru.shareit.request.RequestService;
 import practicum.ru.shareit.request.dto.RequestDto;
 import practicum.ru.shareit.user.User;
+import practicum.ru.shareit.user.dto.UserMapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,7 +49,8 @@ public class RequestControllerTest {
         requestor.setName("Foreydoun");
         requestor.setEmail("foreydoun@mail.com");
         requestDto = new RequestDto(null, "Description", null, null, null);
-        returnRequestDto = new RequestDto(1L, "Description", requestor, LocalDateTime.now(), null);
+        returnRequestDto = new RequestDto(1L, "Description", UserMapper.toUserDto(requestor),
+                LocalDateTime.now(), null);
     }
 
     @Test

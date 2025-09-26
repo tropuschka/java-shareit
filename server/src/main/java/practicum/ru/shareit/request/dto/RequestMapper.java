@@ -1,6 +1,8 @@
 package practicum.ru.shareit.request.dto;
 
 import practicum.ru.shareit.request.Request;
+import practicum.ru.shareit.user.User;
+import practicum.ru.shareit.user.dto.UserMapper;
 
 import java.util.ArrayList;
 
@@ -9,7 +11,7 @@ public class RequestMapper {
         return new RequestDto(
                 request.getId(),
                 request.getDescription(),
-                request.getRequestor(),
+                UserMapper.toUserDto(request.getRequestor()),
                 request.getCreated(),
                 new ArrayList<>()
         );
@@ -19,7 +21,9 @@ public class RequestMapper {
         Request request = new Request();
         request.setId(requestDto.getId());
         request.setDescription(requestDto.getDescription());
-        request.setRequestor(requestDto.getRequestor());
+        User requestor = null;
+        if (requestDto.getRequestor() != null) requestor = UserMapper.toUser(requestDto.getRequestor());
+        request.setRequestor(requestor);
         request.setCreated(requestDto.getCreated());
         return request;
     }
