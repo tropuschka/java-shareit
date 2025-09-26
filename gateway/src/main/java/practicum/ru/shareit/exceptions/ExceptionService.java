@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import practicum.ru.shareit.validation.Violation;
@@ -30,7 +29,6 @@ public class ExceptionService {
         return ErrorResponse.create(e, HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
-    @ResponseBody
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Violation onConstraintValidationException(
@@ -49,7 +47,6 @@ public class ExceptionService {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
     public Violation onMethodArgumentNotValidException(
             MethodArgumentNotValidException e
     ) {
