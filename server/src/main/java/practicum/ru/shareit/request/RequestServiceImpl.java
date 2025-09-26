@@ -12,6 +12,7 @@ import practicum.ru.shareit.request.dto.RequestDto;
 import practicum.ru.shareit.request.dto.RequestMapper;
 import practicum.ru.shareit.user.User;
 import practicum.ru.shareit.user.UserRepository;
+import practicum.ru.shareit.user.dto.UserMapper;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
